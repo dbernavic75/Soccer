@@ -1,28 +1,80 @@
-<div id="game-container" style="text-align: center; font-family: sans-serif;">
-    <h2>⚽ La Mia Squadra FC</h2>
-    <div id="stadium" style="font-size: 50px; margin: 20px;">🏟️</div>
-    <p>Livello Allenamento: <span id="lvl">1</span></p>
-    <progress id="xp-bar" value="0" max="100" style="width: 80%;"></progress>
-    <br><br>
-    <button onclick="train()" style="padding: 15px 30px; font-size: 20px; border-radius: 10px; background: #0088cc; color: white; border: none;">
-        ALLENA SQUADRA 🏃‍♂️
-    </button>
-</div>
-
-<script>
-    let xp = 0;
-    let level = 1;
-
-    function train() {
-        xp += 10;
-        if (xp >= 100) {
-            xp = 0;
-            level++;
-            document.getElementById('lvl').innerText = level;
-            alert("Squadra migliorata! Ora sei al livello " + level);
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Soccer Clicker</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #2e7d32; /* Verde campo */
+            color: white;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
         }
-        document.getElementById('xp-bar').value = xp;
-        
-        // Qui integreremmo la chiamata al bot per salvare i progressi
-    }
-</script>
+        #ui {
+            position: absolute;
+            top: 20px;
+            text-align: center;
+        }
+        #ball {
+            width: 150px;
+            cursor: pointer;
+            transition: transform 0.1s active;
+            user-select: none;
+        }
+        #ball:active {
+            transform: scale(0.9);
+        }
+        .stats {
+            background: rgba(0,0,0,0.5);
+            padding: 10px 20px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="ui">
+        <div class="stats">
+            Allenatore: <span id="user-name">Ospite</span><br>
+            Potenza Squadra: <span id="score">0</span>
+        </div>
+    </div>
+
+    <img src="https://upload.wikimedia.org/wikipedia/commons/d/d3/Soccerball.svg" id="ball" onclick="kick()">
+
+    <script>
+        // Inizializziamo la WebApp di Telegram
+        const tg = window.Telegram.WebApp;
+        tg.expand(); // Espande la finestra a tutto schermo
+
+        let score = 0;
+        const scoreElement = document.getElementById('score');
+        const userElement = document.getElementById('user-name');
+
+        // Mostriamo il nome reale dell'utente Telegram
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            userElement.innerText = tg.initDataUnsafe.user.first_name;
+        }
+
+        function kick() {
+            score += 1;
+            scoreElement.innerText = score;
+            
+            // Ogni 10 punti facciamo vibrare il telefono (feedback figo!)
+            if (score % 10 === 0) {
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+        }
+    </script>
+</body>
+</html>
