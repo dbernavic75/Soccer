@@ -3,37 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Soccer Clicker</title>
+    <title>Soccer Stars Collector</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #2e7d32; /* Verde campo */
-            color: white;
-            font-family: 'Arial', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            overflow: hidden;
-        }
-        #ui {
-            position: absolute;
-            top: 20px;
-            text-align: center;
-        }
-        #ball {
-            width: 150px;
-            cursor: pointer;
-            transition: transform 0.1s active;
-            user-select: none;
-        }
-        #ball:active {
-            transform: scale(0.9);
-        }
-        .stats {
+        body { margin: 0; background: #1a472a; color: white; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; }
+        #header { padding: 20px; text-align: center; background: rgba(0,0,0,0.3); }
+        #game-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #ball { width: 120px; cursor: pointer; transition: 0.1s; }
+        #ball:active { transform: scale(0.9); }
+        
+        /* Menù Inferiore */
+        #navbar { display: flex; background: #000; padding: 10px 0; border-top: 2px solid #2e7d32; }
+        .nav-item { flex: 1; text-align: center; font-size: 12px; cursor: pointer; opacity: 0.6; }
+        .nav-item.active { opacity: 1; color: #4caf50; }
+
+        /* Schermata Squadra */
+        #squad-screen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #1a472a; padding: 20px; box-sizing: border-box; }
+        .player-slot { background: rgba(255,255,255,0.1); margin: 5px; padding: 10px; border-radius: 8px; display: inline-block; width: 80px; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div id="header">
+    <div>⚽ Taps: <span id="tap-count">0</span></div>
+    <div>Punti Ruota: <span id="spin-points">0/100</span></div>
+</div>
+
+<div id="game-area">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/d/d3/Soccerball.svg" id="ball" onclick="doTap()">
+    <p>Tappa per ottenere una girata!</p>
+    <button id="spin-btn" disabled onclick="spinWheel()" style="padding:10px; border-radius:20px; border:none; background:gold; display:none;">GIRA LA RUOTA! 🎡</button>
+</div>
+
+<div id="squad-screen">
+    <h2>La Tua Squadra (5+3)</h2>
+    <div id="players-list"></div>
+    <button onclick="toggleSquad()" style="margin-top:20px; padding:10px; background:red; color:white; border:none;">CHIUDI</button>
+</div>
+
+<div id="navbar">
+    <div class="nav-item active" onclick="showGame()">🏟️ CAMPO</div>
+    <div class="nav-item" onclick="toggleSquad()">🏃 SQUADRA</div>
+    <div class="nav-item">💰 SHOP</div>
+</div>
+
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    let taps = parseInt(localStorage.getItem('taps')) || 0;
+    let players = JSON.parse(localStorage.getItem('players')) || [];
+
+    function updateUI() {
+        document.getElementById('tap-count').innerText = taps;
+        let progress = taps % 100;
+        document.getElementById('spin-points').innerText = progress + "/100";
+        document.getElementById('spin-btn').style.display = (progress === 0 && taps > 0) ? "block" : "none";
+        document.getElementById('spin-btn').disabled = !(progress === 0 && taps > 0);
+    }
+
+    function doTap() {
+        taps++;
+        localStorage.setItem('taps', taps);
+        tg.HapticFeedback.impactOccurred('light');
+        updateUI();
+    }
+
+    function spinWheel() {
+        const rand = Math.random() * 100;
+        let lv = 1;
+        if (rand < 0.5) lv = 5;
+        else if (rand < 3) lv = 4;
+        else if (rand < 10) lv = 3;
+        else if (rand < 35) lv = 2;
+        
+        const newPlayer = "Player Lv." + lv;
+        players.push(newPlayer);
+        localStorage.setItem('players', JSON.stringify(players));
+        
+        alert("🎉 Hai trovato un " + newPlayer + "!");
+        taps++; // Evita di rimanere bloccati sul 100
+        updateUI();
+    }
+
+    function toggleSquad() {
+        const screen = document.getElementById('squad-screen');
+        screen.style.display = (screen.style.display === 'block') ? 'none' : 'block';
+        renderPlayers();
+    }
+
+    function renderPlayers() {
+        const list = document.getElementById('players-list');
+        list.innerHTML = "";
+        players.slice(-8).forEach(p => {
+            list.innerHTML += `<div class="player-slot">${p}</div>`;
+        });
+    }
+
+    updateUI();
+</script>
+</body>
+</html>
             background: rgba(0,0,0,0.5);
             padding: 10px 20px;
             border-radius: 20px;
