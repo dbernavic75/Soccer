@@ -1,0 +1,28 @@
+<div id="game-container" style="text-align: center; font-family: sans-serif;">
+    <h2>⚽ La Mia Squadra FC</h2>
+    <div id="stadium" style="font-size: 50px; margin: 20px;">🏟️</div>
+    <p>Livello Allenamento: <span id="lvl">1</span></p>
+    <progress id="xp-bar" value="0" max="100" style="width: 80%;"></progress>
+    <br><br>
+    <button onclick="train()" style="padding: 15px 30px; font-size: 20px; border-radius: 10px; background: #0088cc; color: white; border: none;">
+        ALLENA SQUADRA 🏃‍♂️
+    </button>
+</div>
+
+<script>
+    let xp = 0;
+    let level = 1;
+
+    function train() {
+        xp += 10;
+        if (xp >= 100) {
+            xp = 0;
+            level++;
+            document.getElementById('lvl').innerText = level;
+            alert("Squadra migliorata! Ora sei al livello " + level);
+        }
+        document.getElementById('xp-bar').value = xp;
+        
+        // Qui integreremmo la chiamata al bot per salvare i progressi
+    }
+</script>
