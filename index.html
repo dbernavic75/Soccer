@@ -67,14 +67,15 @@
         }
 
         function kick() {
-            score += 1;
-            scoreElement.innerText = score;
-            
-            // Ogni 10 punti facciamo vibrare il telefono (feedback figo!)
-            if (score % 10 === 0) {
-                tg.HapticFeedback.impactOccurred('medium');
-            }
-        }
+    score += 1;
+    scoreElement.innerText = score;
+    
+    // Proviamo a forzare la vibrazione ad ogni click con un impatto forte
+    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.impactOccurred('heavy');
+    }
+}
+
     </script>
 </body>
 </html>
