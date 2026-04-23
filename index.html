@@ -8,9 +8,12 @@
     <style>
         body { margin: 0; background: #1a472a; color: white; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        #header { padding: 15px; text-align: center; background: rgba(0,0,0,0.8); border-bottom: 1px solid #2e7d32; display: flex; justify-content: space-around; }
+        /* Header con Reset */
+        #header { padding: 15px; text-align: center; background: rgba(0,0,0,0.8); border-bottom: 1px solid #2e7d32; display: flex; justify-content: space-around; align-items: center; position: relative; }
         .stat-val { font-size: 18px; font-weight: bold; display: block; }
         .stat-lab { font-size: 10px; color: #81c784; text-transform: uppercase; }
+        
+        #reset-btn { position: absolute; right: 5px; top: 5px; font-size: 8px; background: rgba(255,0,0,0.3); border: 1px solid red; color: white; padding: 2px 5px; border-radius: 5px; cursor: pointer; }
 
         #game-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
         #ball { width: 140px; cursor: pointer; transition: transform 0.1s; user-select: none; }
@@ -25,42 +28,42 @@
 
         /* Schermata Squadra */
         #squad-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #13331e; z-index: 10; padding: 20px; box-sizing: border-box; }
+        .pitch { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 10px; }
+        .row { display: flex; justify-content: center; gap: 10px; width: 100%; min-height: 80px; }
+        .player-slot { background: rgba(255,255,255,0.05); border: 1px solid #2e7d32; border-radius: 10px; width: 70px; height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 9px; text-align: center; }
         
-        .pitch { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-top: 10px; }
-        .row { display: flex; justify-content: center; gap: 10px; width: 100%; min-height: 85px; }
-        .player-slot { background: rgba(255,255,255,0.1); border: 1px solid #2e7d32; border-radius: 10px; width: 75px; height: 85px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; text-align: center; }
+        .reserves-container { margin-top: 15px; border-top: 1px dashed #2e7d32; padding-top: 10px; width: 100%; }
+        .reserves-label { text-align: center; font-size: 11px; color: #81c784; margin-bottom: 5px; display: block; text-transform: uppercase; letter-spacing: 1px; }
         
-        .reserves-container { margin-top: 25px; border-top: 1px dashed #2e7d32; padding-top: 15px; width: 100%; }
-        .reserves-label { text-align: center; font-size: 12px; color: #81c784; margin-bottom: 10px; display: block; }
-        
-        .lvl-5 { border-color: gold; color: gold; box-shadow: 0 0 8px gold; }
-        .close-btn { background: #f44336; color: white; border: none; padding: 12px; width: 100%; border-radius: 10px; margin-top: 20px; font-weight: bold; }
+        .lvl-5 { border-color: gold; color: gold; box-shadow: 0 0 8px gold; background: rgba(255,215,0,0.1); }
+        .close-btn { background: #f44336; color: white; border: none; padding: 12px; width: 100%; border-radius: 10px; margin-top: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div id="header">
+    <button id="reset-btn" onclick="resetGame()">RESET TEST</button>
     <div><span class="stat-lab">Taps</span><span id="tap-count" class="stat-val">0</span></div>
     <div><span class="stat-lab">Ruota</span><span id="spin-points" class="stat-val">0/100</span></div>
 </div>
 
 <div id="game-area">
     <img src="https://upload.wikimedia.org/wikipedia/commons/d/d3/Soccerball.svg" id="ball" onclick="doTap()">
-    <p id="hint-text" style="color: #81c784; margin-top: 20px;">Tappa il pallone!</p>
+    <p id="hint-text" style="color: #81c784; margin-top: 20px; font-size: 14px;">Tappa il pallone!</p>
     <button id="spin-btn" onclick="spinWheel()">🎡 GIRA LA RUOTA!</button>
 </div>
 
 <div id="squad-screen">
-    <h2 style="text-align:center; margin-top:0; font-size: 1.2em;">Titolari (<span id="tit-count">0</span>/5)</h2>
-    
+    <h2 style="text-align:center; margin-top:0; font-size: 1.1em; text-transform: uppercase;">Titolari</h2>
     <div class="pitch">
-        <div class="row" id="row-1"></div> <div class="row" id="row-2"></div> <div class="row" id="row-3"></div> </div>
-
+        <div class="row" id="row-1"></div>
+        <div class="row" id="row-2"></div>
+        <div class="row" id="row-3"></div>
+    </div>
     <div class="reserves-container">
-        <span class="reserves-label">Riserve (<span id="res-count">0</span>/3)</span>
+        <span class="reserves-label">Riserve</span>
         <div class="row" id="row-reserves"></div>
     </div>
-
     <button class="close-btn" onclick="toggleSquad()">TORNA AL CAMPO</button>
 </div>
 
@@ -86,6 +89,7 @@
         document.getElementById('spin-btn').style.display = canSpin ? "block" : "none";
         
         if (players.length >= 8) document.getElementById('hint-text').innerText = "Squadra al completo! 🏆";
+        else if (canSpin) document.getElementById('hint-text').innerText = "Vinto una girata!";
         else document.getElementById('hint-text').innerText = "Tappa il pallone!";
     }
 
@@ -94,6 +98,16 @@
         localStorage.setItem('taps', taps);
         if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
         updateUI();
+    }
+
+    function resetGame() {
+        if(confirm("Vuoi resettare tutti i progressi di test?")) {
+            taps = 0;
+            players = [];
+            localStorage.clear();
+            updateUI();
+            alert("Reset completato!");
+        }
     }
 
     function spinWheel() {
@@ -128,29 +142,21 @@
     }
 
     function renderSquad() {
-        const r1 = document.getElementById('row-1');
-        const r2 = document.getElementById('row-2');
-        const r3 = document.getElementById('row-3');
-        const rr = document.getElementById('row-reserves');
-        
-        r1.innerHTML = ""; r2.innerHTML = ""; r3.innerHTML = ""; rr.innerHTML = "";
+        const rows = { r1: document.getElementById('row-1'), r2: document.getElementById('row-2'), r3: document.getElementById('row-3'), rr: document.getElementById('row-reserves') };
+        Object.values(rows).forEach(r => r.innerHTML = "");
 
         players.forEach((p, i) => {
             let slot = `<div class="player-slot lvl-${p.level}"><strong>${p.name}</strong><br>LVL ${p.level}</div>`;
-            if (i === 0) r1.innerHTML = slot;
-            else if (i === 1 || i === 2) r2.innerHTML += slot;
-            else if (i === 3 || i === 4) r3.innerHTML += slot;
-            else if (i >= 5 && i < 8) rr.innerHTML += slot;
+            if (i === 0) rows.r1.innerHTML = slot;
+            else if (i < 3) rows.r2.innerHTML += slot;
+            else if (i < 5) rows.r3.innerHTML += slot;
+            else if (i < 8) rows.rr.innerHTML += slot;
         });
 
-        // Riempimento posti vuoti
-        if (!r1.innerHTML) r1.innerHTML = '<div class="player-slot" style="opacity:0.2">VUOTO</div>';
-        while (r2.children.length < 2) r2.innerHTML += '<div class="player-slot" style="opacity:0.2">VUOTO</div>';
-        while (r3.children.length < 2) r3.innerHTML += '<div class="player-slot" style="opacity:0.2">VUOTO</div>';
-        while (rr.children.length < 3) rr.innerHTML += '<div class="player-slot" style="opacity:0.2">VUOTO</div>';
-
-        document.getElementById('tit-count').innerText = Math.min(players.length, 5);
-        document.getElementById('res-count').innerText = Math.max(0, players.length - 5);
+        if (!rows.r1.innerHTML) rows.r1.innerHTML = '<div class="player-slot" style="opacity:0.2">VUOTO</div>';
+        while (rows.r2.children.length < 2) rows.r2.innerHTML += '<div class="player-slot" style="opacity:0.2">VUOTO</div>';
+        while (rows.r3.children.length < 2) rows.r3.innerHTML += '<div class="player-slot" style="opacity:0.2">VUOTO</div>';
+        while (rows.rr.children.length < 3) rows.rr.innerHTML += '<div class="player-slot" style="opacity:0.2">VUOTO</div>';
     }
 
     updateUI();
