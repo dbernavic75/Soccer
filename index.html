@@ -7,46 +7,54 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body { margin: 0; background: #1a472a; color: white; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        #header { padding: 10px; text-align: center; background: rgba(0,0,0,0.9); border-bottom: 1px solid #2e7d32; display: flex; justify-content: space-around; align-items: center; z-index: 5; }
+        
+        /* Header con Reset */
+        #header { padding: 10px; text-align: center; background: rgba(0,0,0,0.9); border-bottom: 1px solid #2e7d32; display: flex; justify-content: space-around; align-items: center; position: relative; z-index: 5; }
         .stat-val { font-size: 16px; font-weight: bold; display: block; color: #fff; }
         .stat-lab { font-size: 9px; color: #81c784; text-transform: uppercase; }
+        #reset-btn { position: absolute; left: 10px; top: 15px; font-size: 9px; background: rgba(255,0,0,0.4); border: 1px solid red; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
 
         #game-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #ball { width: 120px; cursor: pointer; transition: transform 0.1s; }
+        #ball { width: 120px; cursor: pointer; transition: transform 0.1s; user-select: none; }
         #ball:active { transform: scale(0.9); }
         
         #navbar { display: flex; background: #000; padding: 10px 0; border-top: 1px solid #2e7d32; }
         .nav-item { flex: 1; text-align: center; font-size: 10px; color: #666; cursor: pointer; position: relative; }
-        .nav-item.active { color: #4caf50; }
-        .badge { position: absolute; top: -5px; right: 20%; background: red; color: white; border-radius: 50%; padding: 2px 5px; font-size: 9px; }
+        .nav-item.active { color: #4caf50; font-weight: bold; }
+        .badge { position: absolute; top: -5px; right: 20%; background: red; color: white; border-radius: 50%; padding: 2px 5px; font-size: 9px; font-weight: bold; }
 
+        /* Schermata Squadra */
         #squad-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #13331e; z-index: 10; padding: 15px; box-sizing: border-box; overflow-y: auto; }
         .row { display: flex; justify-content: center; gap: 8px; width: 100%; min-height: 85px; margin-bottom: 8px; }
         
-        .player-slot { background: rgba(0,0,0,0.4); border: 2px solid #2e7d32; border-radius: 8px; width: 75px; height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 5px; box-sizing: border-box; position: relative; }
+        /* Card Giocatore */
+        .player-slot { background: rgba(0,0,0,0.4); border: 2px solid #2e7d32; border-radius: 8px; width: 75px; height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 5px; box-sizing: border-box; position: relative; cursor: pointer; }
         .p-role { font-size: 8px; color: #81c784; font-weight: bold; }
         .p-name { font-size: 7px; text-align: center; font-weight: bold; }
         .p-pwr { font-size: 12px; font-weight: bold; color: gold; }
         .p-upg { font-size: 7px; color: #aaa; }
-        .p-lvl-tag { position: absolute; top: 2px; right: 4px; font-size: 8px; opacity: 0.7; }
+        .p-lvl-tag { position: absolute; top: 2px; right: 4px; font-size: 8px; opacity: 0.7; font-weight: bold; }
 
-        .lvl-1 { border-color: #888; } .lvl-2 { border-color: #4caf50; } 
+        .lvl-1 { border-color: #888; } 
+        .lvl-2 { border-color: #4caf50; } 
         .lvl-3 { border-color: #2196f3; box-shadow: 0 0 5px #2196f3; } 
         .lvl-4 { border-color: #a333c8; box-shadow: 0 0 8px #a333c8; } 
-        .lvl-5 { border-color: #ffd700; box-shadow: 0 0 12px #ffd700; }
+        .lvl-5 { border-color: #ffd700; box-shadow: 0 0 12px #ffd700; background: rgba(255,215,0,0.05); }
 
-        #details-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 20; padding: 30px 20px; box-sizing: border-box; }
+        /* Modal Dettagli */
+        #details-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.97); z-index: 25; padding: 30px 20px; box-sizing: border-box; }
         .stat-bar-bg { background: #333; height: 8px; border-radius: 4px; margin: 4px 0 8px 0; overflow: hidden; }
         .stat-bar-fill { background: #4caf50; height: 100%; width: 0%; transition: width 0.3s; }
-        .upg-btn { background: gold; color: black; border: none; padding: 15px; width: 100%; border-radius: 10px; font-weight: bold; margin-top: 20px; }
+        .upg-btn { background: gold; color: black; border: none; padding: 15px; width: 100%; border-radius: 10px; font-weight: bold; margin-top: 20px; font-size: 14px; }
         .upg-btn:disabled { background: #555; color: #888; }
     </style>
 </head>
 <body>
 
 <div id="header">
+    <button id="reset-btn" onclick="resetGame()">RESET</button>
     <div><span class="stat-lab">Taps</span><span id="tap-count" class="stat-val">0</span></div>
-    <div><span class="stat-lab">Soglia 10</span><span id="spin-points" class="stat-val">0/10</span></div>
+    <div><span class="stat-lab">Giro in</span><span id="spin-points" class="stat-val">0/10</span></div>
 </div>
 
 <div id="game-area">
@@ -55,23 +63,25 @@
 
 <div id="squad-screen">
     <div id="spin-area"></div>
+    <h3 style="text-align:center; font-size:10px; color:#81c784; margin:0 0 10px 0;">TITOLARI</h3>
     <div class="row" id="row-pt"></div>
     <div class="row" id="row-df"></div>
     <div class="row" id="row-at"></div>
-    <div style="border-top:1px dashed #444; margin:10px 0; padding-top:10px">
-        <div class="row" id="row-res"></div>
-    </div>
-    <button onclick="toggleSquad()" style="width:100%; padding:10px; background:#444; color:white; border:none; border-radius:5px">TORNA AL CAMPO</button>
+    
+    <h3 style="text-align:center; font-size:10px; color:#81c784; margin:15px 0 10px 0;">RISERVE</h3>
+    <div class="row" id="row-res"></div>
+    
+    <button onclick="toggleSquad()" style="width:100%; padding:12px; background:#444; color:white; border:none; border-radius:8px; margin-top:20px; font-weight:bold;">CHIUDI SQUADRA</button>
 </div>
 
 <div id="details-modal">
-    <h2 id="m-name" style="margin:0"></h2>
-    <div id="m-role" style="color:gold; font-size:14px; margin-bottom:15px"></div>
+    <h2 id="m-name" style="margin:0; text-transform: uppercase;"></h2>
+    <div id="m-role" style="color:gold; font-size:14px; margin-bottom:15px; font-weight:bold;"></div>
     <div id="stats-container"></div>
-    <div style="margin-top:15px; font-size:18px">Potenza Totale: <span id="m-pwr" style="color:gold"></span></div>
-    <div id="m-upg-text" style="margin-top:5px; color:#aaa"></div>
+    <div style="margin-top:15px; font-size:18px; border-top: 1px solid #333; padding-top: 10px;">Potenza Totale: <span id="m-pwr" style="color:gold"></span></div>
+    <div id="m-upg-text" style="margin-top:5px; color:#aaa; font-size: 13px;"></div>
     <button id="upg-action-btn" class="upg-btn"></button>
-    <button onclick="closeDetails()" style="width:100%; background:transparent; color:white; border:1px solid #444; padding:10px; margin-top:10px; border-radius:10px">CHIUDI</button>
+    <button onclick="closeDetails()" style="width:100%; background:transparent; color:#888; border:1px solid #444; padding:12px; margin-top:10px; border-radius:10px; font-weight:bold;">INDIETRO</button>
 </div>
 
 <div id="navbar">
@@ -89,13 +99,18 @@
 
     let taps = parseInt(localStorage.getItem('taps')) || 0;
     let spins = parseInt(localStorage.getItem('spins')) || 0;
-    let squad = JSON.parse(localStorage.getItem('squad_v5')) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
+    let squad = JSON.parse(localStorage.getItem('squad_v6')) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
     let selectedPlayer = null;
 
     function doTap() {
         taps++;
-        if (taps % 10 === 0) { spins++; localStorage.setItem('spins', spins); }
+        if (taps % 10 === 0) { 
+            spins++; 
+            localStorage.setItem('spins', spins);
+            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+        }
         localStorage.setItem('taps', taps);
+        if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
         updateUI();
     }
 
@@ -109,18 +124,17 @@
 
     function calculateStats(p) {
         let isGK = p.role.includes("PT");
-        let base = p.level * 15;
-        let bonus = p.upgrades * 2.5;
+        let base = p.level * 18;
+        let bonus = p.upgrades * 3;
         
         let s = {
             vel: base + bonus + (p.level * 2),
-            tiro: base + bonus + (p.level * (isGK ? 0.5 : 1.5)),
+            tiro: base + bonus + (p.level * (isGK ? 0.2 : 1.5)),
             pass: base + bonus + (p.level * 1.2),
-            dif: base + bonus + (p.level * (isGK ? 3 : 1)),
-            special: base + bonus + (p.level * 5) // Dribbling o Riflessi
+            dif: base + bonus + (p.level * (isGK ? 4 : 1)),
+            special: base + bonus + (p.level * 6)
         };
         s.labelSpecial = isGK ? "Riflessi" : "Dribbling";
-        
         let total = Math.floor(s.vel + s.tiro + s.pass + s.dif + s.special);
         return { ...s, total };
     }
@@ -143,49 +157,47 @@
             squad[role] = newPlayer; assigned = true;
         }
 
-        if (assigned) alert("NUOVO GIOCATORE: " + newPlayer.name);
-        else alert("SLOT " + role.toUpperCase() + " GIÀ PIENO! Giro perso.");
+        if (assigned) alert("NUOVO " + newPlayer.role + ": " + newPlayer.name);
+        else alert("Slot " + role.toUpperCase() + " occupato! Giro perso.");
         
         saveAndRender();
     }
 
     function saveAndRender() {
-        localStorage.setItem('squad_v5', JSON.stringify(squad));
+        localStorage.setItem('squad_v6', JSON.stringify(squad));
         localStorage.setItem('spins', spins);
         renderSquad();
         updateUI();
     }
 
     function renderSquad() {
-        const containers = { pt:'row-pt', df:'row-df', at:'row-at', res:'row-res' };
-        Object.values(containers).forEach(id => document.getElementById(id).innerHTML = "");
-
-        const draw = (p, roleKey, index = null) => {
-            if (!p) return `<div class="player-slot" style="opacity:0.2"><span class="p-role">${roleKey.replace('res_','R-').toUpperCase()}</span><b>VUOTO</b></div>`;
-            let stats = calculateStats(p);
-            return `
-                <div class="player-slot lvl-${p.level}" onclick="openDetails('${roleKey}', ${index})">
-                    <span class="p-lvl-tag">${p.level}</span>
-                    <span class="p-role">${p.role}</span>
-                    <span class="p-pwr">${stats.total}</span>
-                    <span class="p-name">${p.name}</span>
-                    <span class="p-upg">UPG: ${p.upgrades}/${UPG_LIMITS[p.level]}</span>
-                </div>`;
-        };
-
-        document.getElementById('row-pt').innerHTML = draw(squad.pt[0], 'pt');
-        for(let i=0; i<2; i++) document.getElementById('row-df').innerHTML += draw(squad.df[i], 'df', i);
-        for(let i=0; i<2; i++) document.getElementById('row-at').innerHTML += draw(squad.at[i], 'at', i);
-        
+        document.getElementById('row-pt').innerHTML = draw(squad.pt[0], 'pt', 0);
+        document.getElementById('row-df').innerHTML = draw(squad.df[0], 'df', 0) + draw(squad.df[1], 'df', 1);
+        document.getElementById('row-at').innerHTML = draw(squad.at[0], 'at', 0) + draw(squad.at[1], 'at', 1);
         document.getElementById('row-res').innerHTML = draw(squad.res_pt, 'res_pt') + draw(squad.res_df, 'res_df') + draw(squad.res_at, 'res_at');
 
         document.getElementById('spin-area').innerHTML = spins > 0 ? 
-            `<button onclick="spinWheel()" style="background:gold; width:100%; padding:10px; margin-bottom:10px; border-radius:5px; font-weight:bold">GIRA RUOTA (${spins})</button>` : "";
+            `<button onclick="spinWheel()" style="background:gold; width:100%; padding:12px; margin-bottom:15px; border-radius:8px; font-weight:bold; color:black; border:none; box-shadow:0 0 10px gold;">GIRA RUOTA (${spins})</button>` : "";
+    }
+
+    function draw(p, roleKey, index = null) {
+        if (!p) return `<div class="player-slot" style="opacity:0.2"><span class="p-role">${roleKey.replace('res_','R-').toUpperCase()}</span><b>VUOTO</b></div>`;
+        let stats = calculateStats(p);
+        return `
+            <div class="player-slot lvl-${p.level}" onclick="openDetails('${roleKey}', ${index})">
+                <span class="p-lvl-tag">${p.level}</span>
+                <span class="p-role">${p.role}</span>
+                <span class="p-pwr">${stats.total}</span>
+                <span class="p-name">${p.name}</span>
+                <span class="p-upg">UPG: ${p.upgrades}/${UPG_LIMITS[p.level]}</span>
+            </div>`;
     }
 
     function openDetails(role, index) {
-        let p = (index === null) ? squad[role] : squad[role][index];
-        if (!p) return;
+        // Correzione per accedere correttamente sia a oggetti singoli che array
+        let p = (index === null || (Array.isArray(squad[role]) && squad[role][index] === undefined)) ? squad[role] : squad[role][index];
+        if (!p || Array.isArray(p)) p = squad[role][0]; // Fallback per portiere titolare
+
         selectedPlayer = { role, index };
         let stats = calculateStats(p);
         
@@ -193,17 +205,16 @@
         document.getElementById('m-name').innerText = p.name;
         document.getElementById('m-role').innerText = "RUOLO: " + p.role + " | LIVELLO: " + p.level;
         document.getElementById('m-pwr').innerText = stats.total;
-        document.getElementById('m-upg-text').innerText = `Upgrade: ${p.upgrades} / ${UPG_LIMITS[p.level]}`;
+        document.getElementById('m-upg-text').innerText = `Upgrade eseguiti: ${p.upgrades} / ${UPG_LIMITS[p.level]}`;
 
-        // NUOVA LOGICA COSTO: (Livello * 50) + (Upgrade * 25)
-        let cost = (p.level * 50) + (p.upgrades * 25);
+        let cost = (p.level * 60) + (p.upgrades * 35);
         let btn = document.getElementById('upg-action-btn');
         
         if (p.upgrades >= UPG_LIMITS[p.level]) {
-            btn.innerText = "LIVELLO MASSIMO RAGGIUNTO";
+            btn.innerText = "POTENZIAMENTO MASSIMO";
             btn.disabled = true;
         } else {
-            btn.innerText = `POTENZIA (+ Stats) - COSTO: ${cost} TAPS`;
+            btn.innerText = `UPGRADE STATS (${cost} TAPS)`;
             btn.disabled = taps < cost;
             btn.onclick = () => upgradePlayer(cost);
         }
@@ -212,8 +223,8 @@
         let html = "";
         for(let k in labels) {
             let val = stats[k];
-            let perc = Math.min(val / 6, 100);
-            html += `<div><small>${labels[k]}: ${Math.floor(val)}</small><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${perc}%"></div></div></div>`;
+            let perc = Math.min(val / 7, 100);
+            html += `<div><div style="display:flex; justify-content:space-between;"><small>${labels[k]}</small><small>${Math.floor(val)}</small></div><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${perc}%"></div></div></div>`;
         }
         document.getElementById('stats-container').innerHTML = html;
     }
@@ -221,7 +232,12 @@
     function upgradePlayer(cost) {
         if (taps < cost) return;
         taps -= cost;
-        let p = (selectedPlayer.index === null) ? squad[selectedPlayer.role] : squad[selectedPlayer.role][selectedPlayer.index];
+        let p;
+        if (selectedPlayer.index === null) p = squad[selectedPlayer.role];
+        else p = squad[selectedPlayer.role][selectedPlayer.index];
+        
+        if (!p || Array.isArray(p)) p = squad[selectedPlayer.role][0];
+
         p.upgrades++;
         localStorage.setItem('taps', taps);
         saveAndRender();
@@ -232,15 +248,10 @@
     function toggleSquad() { 
         let s = document.getElementById('squad-screen');
         s.style.display = s.style.display === 'block' ? 'none' : 'block';
-        document.getElementById('nav-campo').classList.toggle('active', s.style.display !== 'block');
-        document.getElementById('nav-squadra').classList.toggle('active', s.style.display === 'block');
         if (s.style.display === 'block') renderSquad();
     }
-    function showGame() { 
-        document.getElementById('squad-screen').style.display = 'none';
-        document.getElementById('nav-campo').classList.add('active');
-        document.getElementById('nav-squadra').classList.remove('active');
-    }
+    function showGame() { document.getElementById('squad-screen').style.display = 'none'; }
+    function resetGame() { if(confirm("Resettare la squadra e i tap?")) { localStorage.clear(); location.reload(); } }
 
     updateUI();
 </script>
