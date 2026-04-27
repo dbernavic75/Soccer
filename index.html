@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Soccer Stars Pro Manager</title>
+    <title>Soccer Stars - Cartoon Edition</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { margin: 0; background: #1a472a; color: white; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        body { margin: 0; background: #1a472a; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* Header con Reset */
         #header { padding: 10px; text-align: center; background: rgba(0,0,0,0.9); border-bottom: 1px solid #2e7d32; display: flex; justify-content: space-around; align-items: center; position: relative; z-index: 5; }
         .stat-val { font-size: 16px; font-weight: bold; display: block; color: #fff; }
         .stat-lab { font-size: 9px; color: #81c784; text-transform: uppercase; }
         #reset-btn { position: absolute; left: 10px; top: 15px; font-size: 9px; background: rgba(255,0,0,0.4); border: 1px solid red; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
 
         #game-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #ball { width: 120px; cursor: pointer; transition: transform 0.1s; user-select: none; }
+        #ball { width: 120px; cursor: pointer; transition: transform 0.1s; user-select: none; z-index: 1; }
         #ball:active { transform: scale(0.9); }
         
         #navbar { display: flex; background: #000; padding: 10px 0; border-top: 1px solid #2e7d32; }
@@ -23,30 +22,56 @@
         .nav-item.active { color: #4caf50; font-weight: bold; }
         .badge { position: absolute; top: -5px; right: 20%; background: red; color: white; border-radius: 50%; padding: 2px 5px; font-size: 9px; font-weight: bold; }
 
-        /* Schermata Squadra */
         #squad-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #13331e; z-index: 10; padding: 15px; box-sizing: border-box; overflow-y: auto; }
-        .row { display: flex; justify-content: center; gap: 8px; width: 100%; min-height: 85px; margin-bottom: 8px; }
+        .row { display: flex; justify-content: center; gap: 8px; width: 100%; min-height: 100px; margin-bottom: 10px; }
         
-        /* Card Giocatore */
-        .player-slot { background: rgba(0,0,0,0.4); border: 2px solid #2e7d32; border-radius: 8px; width: 75px; height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 5px; box-sizing: border-box; position: relative; cursor: pointer; }
-        .p-role { font-size: 8px; color: #81c784; font-weight: bold; }
-        .p-name { font-size: 7px; text-align: center; font-weight: bold; }
-        .p-pwr { font-size: 12px; font-weight: bold; color: gold; }
-        .p-upg { font-size: 7px; color: #aaa; }
-        .p-lvl-tag { position: absolute; top: 2px; right: 4px; font-size: 8px; opacity: 0.7; font-weight: bold; }
+        /* CARD GIOCATORE CON AVATAR */
+        .player-slot { 
+            background-color: #000;
+            background-size: cover;
+            background-position: center;
+            border: 2px solid #2e7d32; 
+            border-radius: 12px; 
+            width: 85px; 
+            height: 120px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: flex-end; 
+            padding: 5px; 
+            box-sizing: border-box; 
+            position: relative; 
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        
+        /* Overlay per rendere leggibili i testi sopra l'immagine */
+        .card-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.8) 80%);
+            z-index: 1;
+        }
+
+        .p-info { position: relative; z-index: 2; text-align: center; width: 100%; }
+        .p-role { font-size: 8px; color: #4caf50; font-weight: bold; text-shadow: 1px 1px 2px #000; }
+        .p-name { font-size: 8px; font-weight: bold; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 2px 0; }
+        .p-pwr { font-size: 14px; font-weight: bold; color: gold; text-shadow: 0 0 5px #000; }
+        .p-upg { font-size: 7px; color: #ddd; }
+        .p-lvl-tag { position: absolute; top: 5px; left: 5px; font-size: 9px; font-weight: bold; z-index: 2; background: rgba(0,0,0,0.6); padding: 2px 5px; border-radius: 4px; }
 
         .lvl-1 { border-color: #888; } 
         .lvl-2 { border-color: #4caf50; } 
-        .lvl-3 { border-color: #2196f3; box-shadow: 0 0 5px #2196f3; } 
-        .lvl-4 { border-color: #a333c8; box-shadow: 0 0 8px #a333c8; } 
-        .lvl-5 { border-color: #ffd700; box-shadow: 0 0 12px #ffd700; background: rgba(255,215,0,0.05); }
+        .lvl-3 { border-color: #2196f3; box-shadow: 0 0 10px #2196f3; } 
+        .lvl-4 { border-color: #a333c8; box-shadow: 0 0 15px #a333c8; } 
+        .lvl-5 { border-color: #ffd700; box-shadow: 0 0 20px #ffd700; }
 
         /* Modal Dettagli */
-        #details-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.97); z-index: 25; padding: 30px 20px; box-sizing: border-box; }
-        .stat-bar-bg { background: #333; height: 8px; border-radius: 4px; margin: 4px 0 8px 0; overflow: hidden; }
-        .stat-bar-fill { background: #4caf50; height: 100%; width: 0%; transition: width 0.3s; }
-        .upg-btn { background: gold; color: black; border: none; padding: 15px; width: 100%; border-radius: 10px; font-weight: bold; margin-top: 20px; font-size: 14px; }
-        .upg-btn:disabled { background: #555; color: #888; }
+        #details-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 25; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+        .m-avatar { width: 120px; height: 120px; border-radius: 50%; border: 4px solid gold; margin: 0 auto 15px; display: block; background: #222; }
+        .stat-bar-bg { background: #333; height: 10px; border-radius: 5px; margin: 5px 0 10px 0; overflow: hidden; }
+        .stat-bar-fill { background: #4caf50; height: 100%; transition: width 0.3s; }
+        .upg-btn { background: gold; color: black; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: bold; margin-top: 15px; font-size: 16px; box-shadow: 0 4px 15px rgba(255,215,0,0.3); }
     </style>
 </head>
 <body>
@@ -63,25 +88,24 @@
 
 <div id="squad-screen">
     <div id="spin-area"></div>
-    <h3 style="text-align:center; font-size:10px; color:#81c784; margin:0 0 10px 0;">TITOLARI</h3>
+    <h3 style="text-align:center; font-size:10px; color:#81c784;">CAMPO TITOLARI</h3>
     <div class="row" id="row-pt"></div>
     <div class="row" id="row-df"></div>
     <div class="row" id="row-at"></div>
-    
-    <h3 style="text-align:center; font-size:10px; color:#81c784; margin:15px 0 10px 0;">RISERVE</h3>
+    <h3 style="text-align:center; font-size:10px; color:#81c784;">PANCHINA</h3>
     <div class="row" id="row-res"></div>
-    
-    <button onclick="toggleSquad()" style="width:100%; padding:12px; background:#444; color:white; border:none; border-radius:8px; margin-top:20px; font-weight:bold;">CHIUDI SQUADRA</button>
+    <button onclick="toggleSquad()" style="width:100%; padding:15px; background:#333; color:white; border:none; border-radius:10px; margin-top:10px; font-weight:bold;">CHIUDI</button>
 </div>
 
 <div id="details-modal">
-    <h2 id="m-name" style="margin:0; text-transform: uppercase;"></h2>
-    <div id="m-role" style="color:gold; font-size:14px; margin-bottom:15px; font-weight:bold;"></div>
+    <img id="m-img" class="m-avatar" src="">
+    <h2 id="m-name" style="margin:0; text-align:center;"></h2>
+    <div id="m-role" style="color:gold; text-align:center; margin-bottom:20px; font-weight:bold;"></div>
     <div id="stats-container"></div>
-    <div style="margin-top:15px; font-size:18px; border-top: 1px solid #333; padding-top: 10px;">Potenza Totale: <span id="m-pwr" style="color:gold"></span></div>
-    <div id="m-upg-text" style="margin-top:5px; color:#aaa; font-size: 13px;"></div>
+    <div style="margin-top:20px; font-size:20px; text-align:center;">POTENZA: <span id="m-pwr" style="color:gold"></span></div>
+    <div id="m-upg-text" style="text-align:center; color:#aaa; font-size: 12px;"></div>
     <button id="upg-action-btn" class="upg-btn"></button>
-    <button onclick="closeDetails()" style="width:100%; background:transparent; color:#888; border:1px solid #444; padding:12px; margin-top:10px; border-radius:10px; font-weight:bold;">INDIETRO</button>
+    <button onclick="closeDetails()" style="width:100%; background:transparent; color:#888; border:1px solid #444; padding:12px; margin-top:10px; border-radius:10px;">INDIETRO</button>
 </div>
 
 <div id="navbar">
@@ -94,23 +118,28 @@
 
 <script>
     const tg = window.Telegram.WebApp;
-    const RANK_NAMES = ["DILETTANTE", "PROMESSA", "TOP PLAYER", "FUORICLASSE", "PALLONE D'ORO"];
-    const UPG_LIMITS = [0, 30, 20, 15, 10, 5]; 
+    const UPG_LIMITS = [0, 30, 20, 15, 10, 5];
+    const NAMES = ["Gabi", "Leo", "Cr7", "Kylian", "Ney", "Erling", "Zlatan", "Luka", "Kevin", "Ciro", "Paulo", "Theo", "Dusan", "Mike", "Lautaro", "Nicolo", "Rafael", "Harry", "Mo", "Jude"];
+    const SURNAMES = ["Gol", "Bomber", "Muro", "Saetta", "Roccia", "Drago", "Lampo", "Guantone", "Turbo", "Lince", "Titano", "Ghepardo", "Falco", "Sniper", "Ace"];
 
     let taps = parseInt(localStorage.getItem('taps')) || 0;
     let spins = parseInt(localStorage.getItem('spins')) || 0;
-    let squad = JSON.parse(localStorage.getItem('squad_v6')) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
+    let squad = JSON.parse(localStorage.getItem('squad_v7')) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
     let selectedPlayer = null;
+
+    function generateRandomName() {
+        return NAMES[Math.floor(Math.random()*NAMES.length)] + " " + SURNAMES[Math.floor(Math.random()*SURNAMES.length)];
+    }
+
+    function getAvatar(name) {
+        // Usiamo DiceBear Avataaars per uno stile cartoon simpatico
+        return `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
+    }
 
     function doTap() {
         taps++;
-        if (taps % 10 === 0) { 
-            spins++; 
-            localStorage.setItem('spins', spins);
-            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-        }
+        if (taps % 10 === 0) { spins++; localStorage.setItem('spins', spins); }
         localStorage.setItem('taps', taps);
-        if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
         updateUI();
     }
 
@@ -124,19 +153,12 @@
 
     function calculateStats(p) {
         let isGK = p.role.includes("PT");
-        let base = p.level * 18;
-        let bonus = p.upgrades * 3;
-        
-        let s = {
-            vel: base + bonus + (p.level * 2),
-            tiro: base + bonus + (p.level * (isGK ? 0.2 : 1.5)),
-            pass: base + bonus + (p.level * 1.2),
-            dif: base + bonus + (p.level * (isGK ? 4 : 1)),
-            special: base + bonus + (p.level * 6)
-        };
+        let base = p.level * 20;
+        let bonus = p.upgrades * 4;
+        let s = { vel: base+bonus, tiro: base+bonus+(isGK?-10:5), pass: base+bonus, dif: base+bonus+(isGK?15:0), special: base+bonus+10 };
         s.labelSpecial = isGK ? "Riflessi" : "Dribbling";
-        let total = Math.floor(s.vel + s.tiro + s.pass + s.dif + s.special);
-        return { ...s, total };
+        s.total = Math.floor(Object.values(s).filter(v => typeof v === 'number').reduce((a,b)=>a+b, 0));
+        return s;
     }
 
     function spinWheel() {
@@ -147,7 +169,14 @@
         const rand = Math.random() * 100;
         let lv = rand < 1 ? 5 : rand < 5 ? 4 : rand < 15 ? 3 : rand < 45 ? 2 : 1;
         
-        const newPlayer = { level: lv, name: RANK_NAMES[lv-1], upgrades: 0, role: role.replace('res_', 'R-').toUpperCase() };
+        let pName = generateRandomName();
+        const newPlayer = { 
+            level: lv, 
+            name: pName, 
+            avatar: getAvatar(pName),
+            upgrades: 0, 
+            role: role.replace('res_', 'R-').toUpperCase() 
+        };
         
         let assigned = false;
         if (['pt','df','at'].includes(role)) {
@@ -157,15 +186,8 @@
             squad[role] = newPlayer; assigned = true;
         }
 
-        if (assigned) alert("NUOVO " + newPlayer.role + ": " + newPlayer.name);
-        else alert("Slot " + role.toUpperCase() + " occupato! Giro perso.");
-        
-        saveAndRender();
-    }
-
-    function saveAndRender() {
-        localStorage.setItem('squad_v6', JSON.stringify(squad));
-        localStorage.setItem('spins', spins);
+        if (assigned) alert("TROVATO: " + newPlayer.name);
+        localStorage.setItem('squad_v7', JSON.stringify(squad));
         renderSquad();
         updateUI();
     }
@@ -177,54 +199,49 @@
         document.getElementById('row-res').innerHTML = draw(squad.res_pt, 'res_pt') + draw(squad.res_df, 'res_df') + draw(squad.res_at, 'res_at');
 
         document.getElementById('spin-area').innerHTML = spins > 0 ? 
-            `<button onclick="spinWheel()" style="background:gold; width:100%; padding:12px; margin-bottom:15px; border-radius:8px; font-weight:bold; color:black; border:none; box-shadow:0 0 10px gold;">GIRA RUOTA (${spins})</button>` : "";
+            `<button onclick="spinWheel()" style="background:gold; width:100%; padding:12px; margin-bottom:15px; border-radius:8px; font-weight:bold; color:black; border:none;">GIRA RUOTA (${spins})</button>` : "";
     }
 
     function draw(p, roleKey, index = null) {
-        if (!p) return `<div class="player-slot" style="opacity:0.2"><span class="p-role">${roleKey.replace('res_','R-').toUpperCase()}</span><b>VUOTO</b></div>`;
+        if (!p) return `<div class="player-slot" style="opacity:0.2; background: #000;"><span class="p-role">${roleKey.toUpperCase()}</span><b>VUOTO</b></div>`;
         let stats = calculateStats(p);
         return `
-            <div class="player-slot lvl-${p.level}" onclick="openDetails('${roleKey}', ${index})">
-                <span class="p-lvl-tag">${p.level}</span>
-                <span class="p-role">${p.role}</span>
-                <span class="p-pwr">${stats.total}</span>
-                <span class="p-name">${p.name}</span>
-                <span class="p-upg">UPG: ${p.upgrades}/${UPG_LIMITS[p.level]}</span>
+            <div class="player-slot lvl-${p.level}" style="background-image: url('${p.avatar}')" onclick="openDetails('${roleKey}', ${index})">
+                <div class="card-overlay"></div>
+                <span class="p-lvl-tag">LV. ${p.level}</span>
+                <div class="p-info">
+                    <span class="p-role">${p.role}</span><br>
+                    <span class="p-pwr">${stats.total}</span><br>
+                    <span class="p-name">${p.name}</span><br>
+                    <span class="p-upg">${p.upgrades}/${UPG_LIMITS[p.level]} UPG</span>
+                </div>
             </div>`;
     }
 
     function openDetails(role, index) {
-        // Correzione per accedere correttamente sia a oggetti singoli che array
         let p = (index === null || (Array.isArray(squad[role]) && squad[role][index] === undefined)) ? squad[role] : squad[role][index];
-        if (!p || Array.isArray(p)) p = squad[role][0]; // Fallback per portiere titolare
-
+        if (!p || Array.isArray(p)) p = squad[role][0];
         selectedPlayer = { role, index };
         let stats = calculateStats(p);
         
         document.getElementById('details-modal').style.display = 'block';
+        document.getElementById('m-img').src = p.avatar;
         document.getElementById('m-name').innerText = p.name;
-        document.getElementById('m-role').innerText = "RUOLO: " + p.role + " | LIVELLO: " + p.level;
+        document.getElementById('m-role').innerText = p.role + " - GRADO " + p.level;
         document.getElementById('m-pwr').innerText = stats.total;
-        document.getElementById('m-upg-text').innerText = `Upgrade eseguiti: ${p.upgrades} / ${UPG_LIMITS[p.level]}`;
+        document.getElementById('m-upg-text').innerText = `Upgrade: ${p.upgrades} / ${UPG_LIMITS[p.level]}`;
 
-        let cost = (p.level * 60) + (p.upgrades * 35);
+        let cost = (p.level * 100) + (p.upgrades * 50);
         let btn = document.getElementById('upg-action-btn');
-        
-        if (p.upgrades >= UPG_LIMITS[p.level]) {
-            btn.innerText = "POTENZIAMENTO MASSIMO";
-            btn.disabled = true;
-        } else {
-            btn.innerText = `UPGRADE STATS (${cost} TAPS)`;
-            btn.disabled = taps < cost;
-            btn.onclick = () => upgradePlayer(cost);
-        }
+        btn.innerText = p.upgrades >= UPG_LIMITS[p.level] ? "MAX LVL" : `POTENZIA (${cost} TAPS)`;
+        btn.disabled = taps < cost || p.upgrades >= UPG_LIMITS[p.level];
+        btn.onclick = () => upgradePlayer(cost);
 
         const labels = { vel:"Velocità", tiro:"Tiro", pass:"Passaggio", dif:"Difesa", special:stats.labelSpecial };
         let html = "";
         for(let k in labels) {
             let val = stats[k];
-            let perc = Math.min(val / 7, 100);
-            html += `<div><div style="display:flex; justify-content:space-between;"><small>${labels[k]}</small><small>${Math.floor(val)}</small></div><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${perc}%"></div></div></div>`;
+            html += `<div><small>${labels[k]}: ${Math.floor(val)}</small><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${val/10}%"></div></div></div>`;
         }
         document.getElementById('stats-container').innerHTML = html;
     }
@@ -232,27 +249,19 @@
     function upgradePlayer(cost) {
         if (taps < cost) return;
         taps -= cost;
-        let p;
-        if (selectedPlayer.index === null) p = squad[selectedPlayer.role];
-        else p = squad[selectedPlayer.role][selectedPlayer.index];
-        
+        let p = (selectedPlayer.index === null) ? squad[selectedPlayer.role] : squad[selectedPlayer.role][selectedPlayer.index];
         if (!p || Array.isArray(p)) p = squad[selectedPlayer.role][0];
-
         p.upgrades++;
         localStorage.setItem('taps', taps);
-        saveAndRender();
+        localStorage.setItem('squad_v7', JSON.stringify(squad));
+        renderSquad();
         openDetails(selectedPlayer.role, selectedPlayer.index);
     }
 
     function closeDetails() { document.getElementById('details-modal').style.display = 'none'; }
-    function toggleSquad() { 
-        let s = document.getElementById('squad-screen');
-        s.style.display = s.style.display === 'block' ? 'none' : 'block';
-        if (s.style.display === 'block') renderSquad();
-    }
+    function toggleSquad() { document.getElementById('squad-screen').style.display = document.getElementById('squad-screen').style.display === 'block'?'none':'block'; renderSquad(); }
     function showGame() { document.getElementById('squad-screen').style.display = 'none'; }
-    function resetGame() { if(confirm("Resettare la squadra e i tap?")) { localStorage.clear(); location.reload(); } }
-
+    function resetGame() { if(confirm("Reset totale?")) { localStorage.clear(); location.reload(); } }
     updateUI();
 </script>
 </body>
