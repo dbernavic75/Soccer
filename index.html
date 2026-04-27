@@ -21,7 +21,7 @@
             display: flex; flex-direction: column; height: 100vh; overflow: hidden; 
         }
 
-        /* HEADER STILE GAMING */
+        /* HEADER */
         #header { 
             padding: 10px; background: #000; border-bottom: 3px solid var(--gold);
             display: flex; justify-content: space-between; align-items: center; z-index: 5;
@@ -35,12 +35,12 @@
             padding: 5px 10px; border-radius: 5px; font-weight: bold; cursor: pointer;
         }
 
-        /* CAMPO DA GIOCO */
+        /* CAMPO */
         #game-area { flex: 1; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #2e7d32 0%, #1a472a 100%); }
         #ball { width: 140px; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5)); cursor: pointer; transition: 0.1s; }
         #ball:active { transform: scale(0.8) rotate(15deg); }
 
-        /* SCHERMATA SQUADRA STILE FIGURINE */
+        /* SCHERMATA SQUADRA */
         #squad-screen { 
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: #0f2b1a; z-index: 10; padding: 10px; box-sizing: border-box; overflow-y: auto; 
@@ -51,56 +51,57 @@
         }
         .row { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
 
-        /* CARD DESIGN ISPIRATO ALL'IMMAGINE */
+        /* CARD DESIGN */
         .player-slot { 
             width: 95px; height: 145px; border-radius: 8px; position: relative;
             background: #222; border: 3px solid var(--rarity-1);
             overflow: hidden; display: flex; flex-direction: column;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); cursor: pointer;
         }
         .card-bg {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-size: cover; background-position: center; opacity: 0.8; z-index: 1;
         }
         .card-overlay {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 60%;
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 65%;
             background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%); z-index: 2;
         }
         .card-header { position: absolute; top: 2px; width: 100%; display: flex; justify-content: space-between; padding: 0 5px; z-index: 3; box-sizing: border-box; }
-        .card-role { background: rgba(0,0,0,0.7); padding: 1px 4px; border-radius: 3px; font-size: 9px; color: var(--gold); }
-        .card-lvl { color: white; font-size: 10px; }
+        .card-role { background: rgba(0,0,0,0.7); padding: 1px 4px; border-radius: 3px; font-size: 8px; color: var(--gold); }
+        .card-upg-label { background: var(--gold); color: black; padding: 1px 3px; border-radius: 2px; font-size: 7px; font-weight: bold; }
         
         .card-info { position: absolute; bottom: 5px; width: 100%; text-align: center; z-index: 3; }
         .card-pwr { font-size: 18px; color: var(--gold); display: block; line-height: 1; }
-        .card-name { font-size: 8px; text-transform: uppercase; white-space: nowrap; }
+        .card-name { font-size: 8px; text-transform: uppercase; white-space: nowrap; overflow: hidden; padding: 0 2px; }
 
-        /* RARITY COLORS */
         .lvl-2 { border-color: var(--rarity-2); }
         .lvl-3 { border-color: var(--rarity-3); box-shadow: 0 0 10px var(--rarity-3); }
         .lvl-4 { border-color: var(--rarity-4); box-shadow: 0 0 15px var(--rarity-4); }
-        .lvl-5 { border-color: var(--rarity-5); border-style: double; box-shadow: 0 0 20px var(--rarity-5); }
+        .lvl-5 { border-color: var(--rarity-5); box-shadow: 0 0 20px var(--rarity-5); }
 
-        /* MODALE DETTAGLI (TIPO L'IMMAGINE) */
+        /* MODALE DETTAGLI */
         #details-modal { 
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.95); z-index: 25; padding: 20px; box-sizing: border-box;
+            align-items: center; justify-content: center;
         }
         .modal-content {
             background: #ffeb3b; color: #000; border-radius: 15px; padding: 20px;
-            max-width: 300px; margin: auto; position: relative;
+            width: 100%; max-width: 320px; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
-        .modal-img { width: 150px; height: 150px; margin: 0 auto; display: block; }
-        .stat-row { display: flex; align-items: center; gap: 5px; margin: 5px 0; }
-        .stat-label { flex: 1; font-size: 10px; }
-        .stat-bar { flex: 2; height: 8px; background: rgba(0,0,0,0.2); border-radius: 4px; overflow: hidden; }
+        .modal-img { width: 120px; height: 120px; margin: 0 auto; display: block; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3)); }
+        .stat-row { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
+        .stat-label { width: 40px; font-size: 10px; font-weight: bold; }
+        .stat-bar { flex: 1; height: 10px; background: rgba(0,0,0,0.15); border-radius: 5px; overflow: hidden; position: relative; }
         .stat-fill { height: 100%; background: #2e7d32; }
+        .stat-num { width: 30px; text-align: right; font-size: 11px; font-weight: bold; }
         .upg-btn {
             background: #2e7d32; color: white; border: none; width: 100%; 
-            padding: 12px; border-radius: 8px; margin-top: 15px; font-weight: bold;
+            padding: 12px; border-radius: 8px; margin-top: 15px; font-weight: bold; font-size: 14px;
         }
 
         #navbar { display: flex; background: #000; padding: 10px 0; border-top: 3px solid var(--gold); }
-        .nav-item { flex: 1; text-align: center; font-size: 12px; color: #666; }
+        .nav-item { flex: 1; text-align: center; font-size: 12px; color: #666; cursor: pointer; }
         .nav-item.active { color: var(--gold); }
     </style>
 </head>
@@ -118,23 +119,23 @@
 
 <div id="squad-screen">
     <div id="spin-area"></div>
-    <div class="section-title">TITOLARI (1-2-2)</div>
+    <div class="section-title">TITOLARI</div>
     <div class="row" id="row-pt"></div>
     <div class="row" id="row-df"></div>
     <div class="row" id="row-at"></div>
     <div class="section-title">RISERVE</div>
     <div class="row" id="row-res"></div>
-    <button onclick="toggleSquad()" style="width:100%; padding:15px; background:var(--gold); border:none; font-weight:bold; border-radius:8px;">TORNA AL CAMPO</button>
+    <button onclick="showGame()" style="width:100%; padding:15px; background:var(--gold); border:none; font-weight:bold; border-radius:8px; color: black; cursor: pointer; margin-bottom: 20px;">TORNA AL CAMPO</button>
 </div>
 
 <div id="details-modal">
     <div class="modal-content">
-        <button onclick="closeDetails()" style="position:absolute; right:10px; top:10px; background:none; border:none; font-size:20px; font-weight:bold;">X</button>
+        <button onclick="closeDetails()" style="position:absolute; right:15px; top:15px; background:none; border:none; font-size:24px; font-weight:bold; cursor:pointer;">×</button>
         <img id="m-img" class="modal-img" src="">
-        <h2 id="m-name" style="margin:5px 0; text-align:center;"></h2>
-        <p id="m-meta" style="text-align:center; font-size:10px; margin:0;"></p>
-        <div id="stats-container" style="margin-top:10px;"></div>
-        <div id="m-total" style="text-align:center; font-size:20px; margin-top:10px;"></div>
+        <h2 id="m-name" style="margin:5px 0; text-align:center; text-transform: uppercase; font-size: 18px;"></h2>
+        <p id="m-meta" style="text-align:center; font-size:10px; margin:0; opacity: 0.7;"></p>
+        <div id="stats-container" style="margin-top:15px;"></div>
+        <div id="m-total" style="text-align:center; font-size:22px; margin-top:10px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 10px;"></div>
         <button id="upg-action-btn" class="upg-btn"></button>
     </div>
 </div>
@@ -147,18 +148,15 @@
 <script>
     const tg = window.Telegram.WebApp;
     const UPG_LIMITS = [0, 30, 20, 15, 10, 5];
-    const NAMES = ["Leo","Zlatan","Harry","Ney","Ciro","Paulo","Rafael","Jude","Kylian","Erling"];
-    const SURNAMES = ["Bomber","Muro","Saetta","Drago","Lampo","Guantone","Ace","Roccia","Turbo"];
+    const NAMES = ["Leo","Zlatan","Harry","Ney","Ciro","Paulo","Rafael","Jude","Kylian","Erling","Mike","Theo","Luka","Kevin"];
+    const SURNAMES = ["Bomber","Muro","Saetta","Drago","Lampo","Guantone","Ace","Roccia","Turbo","Sniper"];
 
     let taps = parseInt(localStorage.getItem('taps')) || 0;
     let spins = parseInt(localStorage.getItem('spins')) || 0;
-    let squad = JSON.parse(localStorage.getItem('squad_v9')) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
+    let squad = JSON.parse(localStorage.getItem('squad_v10')) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
 
-    // Funzione per generare l'immagine in posa cartoon
     function getPose(role, name) {
-        let poseType = "adventurer"; // Default
-        if(role.includes("PT")) poseType = "bottts"; // Portiere stile robotico/diverso
-        if(role.includes("AT")) poseType = "avataaars"; // Attaccante
+        let poseType = role.includes("PT") ? "bottts" : (role.includes("AT") ? "avataaars" : "adventurer");
         return `https://api.dicebear.com/7.x/${poseType}/svg?seed=${name}&backgroundColor=ffd700,2e7d32`;
     }
 
@@ -169,11 +167,11 @@
         let bias = p.bias || 0;
         
         let s = {
-            VEL: Math.floor(base + (bias==0?20:5) + bonus),
-            SHO: Math.floor(base + (isGK?-20:(bias==1?20:5)) + bonus),
-            PAS: Math.floor(base + (bias==2?20:5) + bonus),
-            DEF: Math.floor(base + (isGK?30:(bias==3?20:5)) + bonus),
-            SPC: Math.floor(base + (bias==4?20:5) + bonus)
+            VEL: Math.floor(base + (bias==0?22:6) + bonus),
+            SHO: Math.floor(base + (isGK?-25:(bias==1?22:6)) + bonus),
+            PAS: Math.floor(base + (bias==2?22:6) + bonus),
+            DEF: Math.floor(base + (isGK?35:(bias==3?22:6)) + bonus),
+            SPC: Math.floor(base + (bias==4?22:6) + bonus)
         };
         s.labelSPC = isGK ? "REF" : "DRI";
         s.total = s.VEL + s.SHO + s.PAS + s.DEF + s.SPC;
@@ -214,20 +212,23 @@
         } else if (!squad[role]) { squad[role] = newPlayer; assigned = true; }
 
         alert(assigned ? "TROVATO: " + newPlayer.name : "SLOT PIENO!");
-        localStorage.setItem('squad_v9', JSON.stringify(squad));
+        localStorage.setItem('squad_v10', JSON.stringify(squad));
         localStorage.setItem('spins', spins);
         renderSquad();
     }
 
     function renderSquad() {
         const d = (p, k, i) => {
-            if(!p) return `<div class="player-slot" style="opacity:0.3; justify-content:center;">${k.toUpperCase()}</div>`;
+            if(!p) return `<div class="player-slot" style="opacity:0.3; justify-content:center; align-items:center;">${k.toUpperCase()}</div>`;
             let s = calculateStats(p);
             return `
             <div class="player-slot lvl-${p.level}" onclick="openDetails('${k}',${i})">
                 <div class="card-bg" style="background-image:url('${p.img}')"></div>
                 <div class="card-overlay"></div>
-                <div class="card-header"><span class="card-role">${p.role}</span><span class="card-lvl">L${p.level}</span></div>
+                <div class="card-header">
+                    <span class="card-role">${p.role}</span>
+                    <span class="card-upg-label">UPG ${p.upgrades}</span>
+                </div>
                 <div class="card-info">
                     <span class="card-pwr">${s.total}</span>
                     <span class="card-name">${p.name}</span>
@@ -239,43 +240,58 @@
         document.getElementById('row-at').innerHTML = d(squad.at[0], 'at', 0) + d(squad.at[1], 'at', 1);
         document.getElementById('row-res').innerHTML = d(squad.res_pt, 'res_pt', null) + d(squad.res_df, 'res_df', null) + d(squad.res_at, 'res_at', null);
         
-        document.getElementById('spin-area').innerHTML = spins > 0 ? `<button onclick="spinWheel()" class="upg-btn" style="margin-bottom:20px;">GIRA RUOTA (${spins})</button>` : "";
+        document.getElementById('spin-area').innerHTML = spins > 0 ? `<button onclick="spinWheel()" class="upg-btn" style="margin-bottom:20px; background: gold; color: black;">GIRA RUOTA (${spins})</button>` : "";
     }
 
     function openDetails(role, index) {
         let p = (index === null) ? squad[role] : squad[role][index];
-        if(!p || (Array.isArray(p) && !p[0])) return;
-        if(Array.isArray(p)) p = p[0];
+        if(!p) return;
 
         let s = calculateStats(p);
         document.getElementById('details-modal').style.display = 'flex';
         document.getElementById('m-img').src = p.img;
         document.getElementById('m-name').innerText = p.name;
-        document.getElementById('m-meta').innerText = `RUOLO: ${p.role} | LIVELLO: ${p.level} | UPG: ${p.upgrades}/${UPG_LIMITS[p.level]}`;
-        document.getElementById('m-total').innerText = `POW: ${s.total}`;
+        document.getElementById('m-meta').innerText = `RUOLO: ${p.role} | LIVELLO: ${p.level} | UPGRADES: ${p.upgrades}/${UPG_LIMITS[p.level]}`;
+        document.getElementById('m-total').innerText = `TOTALE: ${s.total}`;
 
         let cost = (p.level * 150) + (p.upgrades * 75);
         let btn = document.getElementById('upg-action-btn');
-        btn.innerText = p.upgrades >= UPG_LIMITS[p.level] ? "MAXED" : `POTENZIA (${cost} TAPS)`;
+        btn.innerText = p.upgrades >= UPG_LIMITS[p.level] ? "MAX POTENZIAMENTO" : `POTENZIA (${cost} TAPS)`;
         btn.disabled = taps < cost || p.upgrades >= UPG_LIMITS[p.level];
+        
         btn.onclick = () => {
             taps -= cost; p.upgrades++;
-            localStorage.setItem('taps', taps); localStorage.setItem('squad_v9', JSON.stringify(squad));
+            localStorage.setItem('taps', taps); localStorage.setItem('squad_v10', JSON.stringify(squad));
             renderSquad(); openDetails(role, index);
+            updateUI();
         };
 
         let h = "";
         const lbls = { VEL:"VEL", SHO:"TIR", PAS:"PAS", DEF:"DIF", SPC:s.labelSPC };
         for(let k in lbls) {
-            h += `<div class="stat-row"><span class="stat-label">${lbls[k]}</span><div class="stat-bar"><div class="stat-fill" style="width:${s[k]/10}%"></div></div></div>`;
+            let val = s[k];
+            h += `<div class="stat-row">
+                    <span class="stat-label">${lbls[k]}</span>
+                    <div class="stat-bar"><div class="stat-fill" style="width:${Math.min(val/6, 100)}%"></div></div>
+                    <span class="stat-num">${val}</span>
+                  </div>`;
         }
         document.getElementById('stats-container').innerHTML = h;
     }
 
     function closeDetails() { document.getElementById('details-modal').style.display = 'none'; }
-    function toggleSquad() { document.getElementById('squad-screen').style.display = 'block'; renderSquad(); }
-    function showGame() { document.getElementById('squad-screen').style.display = 'none'; }
-    function resetGame() { if(confirm("RESET?")) { localStorage.clear(); location.reload(); } }
+    function toggleSquad() { 
+        document.getElementById('squad-screen').style.display = 'block'; 
+        document.getElementById('nav-squadra').classList.add('active');
+        document.getElementById('nav-campo').classList.remove('active');
+        renderSquad(); 
+    }
+    function showGame() { 
+        document.getElementById('squad-screen').style.display = 'none'; 
+        document.getElementById('nav-campo').classList.add('active');
+        document.getElementById('nav-squadra').classList.remove('active');
+    }
+    function resetGame() { if(confirm("Resettare tutti i dati?")) { localStorage.clear(); location.reload(); } }
 
     updateUI();
 </script>
