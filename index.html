@@ -3,83 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Soccer Stars - Cartoon Edition</title>
+    <title>Soccer Stars - Pro Collector</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { margin: 0; background: #1a472a; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        
-        #header { padding: 10px; text-align: center; background: rgba(0,0,0,0.9); border-bottom: 1px solid #2e7d32; display: flex; justify-content: space-around; align-items: center; position: relative; z-index: 5; }
-        .stat-val { font-size: 16px; font-weight: bold; display: block; color: #fff; }
-        .stat-lab { font-size: 9px; color: #81c784; text-transform: uppercase; }
-        #reset-btn { position: absolute; left: 10px; top: 15px; font-size: 9px; background: rgba(255,0,0,0.4); border: 1px solid red; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+        :root {
+            --gold: #ffd700;
+            --rarity-1: #b0b0b0;
+            --rarity-2: #4caf50;
+            --rarity-3: #2196f3;
+            --rarity-4: #a333c8;
+            --rarity-5: #ff9800;
+        }
 
-        #game-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #ball { width: 120px; cursor: pointer; transition: transform 0.1s; user-select: none; z-index: 1; }
-        #ball:active { transform: scale(0.9); }
-        
-        #navbar { display: flex; background: #000; padding: 10px 0; border-top: 1px solid #2e7d32; }
-        .nav-item { flex: 1; text-align: center; font-size: 10px; color: #666; cursor: pointer; position: relative; }
-        .nav-item.active { color: #4caf50; font-weight: bold; }
-        .badge { position: absolute; top: -5px; right: 20%; background: red; color: white; border-radius: 50%; padding: 2px 5px; font-size: 9px; font-weight: bold; }
+        body { 
+            margin: 0; background: #1a472a; color: white; 
+            font-family: 'Arial Black', sans-serif; 
+            display: flex; flex-direction: column; height: 100vh; overflow: hidden; 
+        }
 
-        #squad-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #13331e; z-index: 10; padding: 15px; box-sizing: border-box; overflow-y: auto; }
-        .row { display: flex; justify-content: center; gap: 8px; width: 100%; min-height: 100px; margin-bottom: 10px; }
+        /* HEADER STILE GAMING */
+        #header { 
+            padding: 10px; background: #000; border-bottom: 3px solid var(--gold);
+            display: flex; justify-content: space-between; align-items: center; z-index: 5;
+        }
+        .header-stat { text-align: center; flex: 1; }
+        .stat-val { font-size: 18px; color: var(--gold); display: block; }
+        .stat-lab { font-size: 8px; text-transform: uppercase; color: #aaa; }
         
-        /* CARD GIOCATORE CON AVATAR */
+        #reset-btn { 
+            background: #ff4444; border: none; color: white; 
+            padding: 5px 10px; border-radius: 5px; font-weight: bold; cursor: pointer;
+        }
+
+        /* CAMPO DA GIOCO */
+        #game-area { flex: 1; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #2e7d32 0%, #1a472a 100%); }
+        #ball { width: 140px; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5)); cursor: pointer; transition: 0.1s; }
+        #ball:active { transform: scale(0.8) rotate(15deg); }
+
+        /* SCHERMATA SQUADRA STILE FIGURINE */
+        #squad-screen { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #0f2b1a; z-index: 10; padding: 10px; box-sizing: border-box; overflow-y: auto; 
+        }
+        .section-title { 
+            text-align: center; color: var(--gold); font-size: 14px; 
+            margin: 10px 0; border-bottom: 1px solid var(--gold); padding-bottom: 5px;
+        }
+        .row { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+
+        /* CARD DESIGN ISPIRATO ALL'IMMAGINE */
         .player-slot { 
-            background-color: #000;
-            background-size: cover;
-            background-position: center;
-            border: 2px solid #2e7d32; 
-            border-radius: 12px; 
-            width: 85px; 
-            height: 120px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: flex-end; 
-            padding: 5px; 
-            box-sizing: border-box; 
-            position: relative; 
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            width: 95px; height: 145px; border-radius: 8px; position: relative;
+            background: #222; border: 3px solid var(--rarity-1);
+            overflow: hidden; display: flex; flex-direction: column;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
-        
-        /* Overlay per rendere leggibili i testi sopra l'immagine */
+        .card-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover; background-position: center; opacity: 0.8; z-index: 1;
+        }
         .card-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.8) 80%);
-            z-index: 1;
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 60%;
+            background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%); z-index: 2;
+        }
+        .card-header { position: absolute; top: 2px; width: 100%; display: flex; justify-content: space-between; padding: 0 5px; z-index: 3; box-sizing: border-box; }
+        .card-role { background: rgba(0,0,0,0.7); padding: 1px 4px; border-radius: 3px; font-size: 9px; color: var(--gold); }
+        .card-lvl { color: white; font-size: 10px; }
+        
+        .card-info { position: absolute; bottom: 5px; width: 100%; text-align: center; z-index: 3; }
+        .card-pwr { font-size: 18px; color: var(--gold); display: block; line-height: 1; }
+        .card-name { font-size: 8px; text-transform: uppercase; white-space: nowrap; }
+
+        /* RARITY COLORS */
+        .lvl-2 { border-color: var(--rarity-2); }
+        .lvl-3 { border-color: var(--rarity-3); box-shadow: 0 0 10px var(--rarity-3); }
+        .lvl-4 { border-color: var(--rarity-4); box-shadow: 0 0 15px var(--rarity-4); }
+        .lvl-5 { border-color: var(--rarity-5); border-style: double; box-shadow: 0 0 20px var(--rarity-5); }
+
+        /* MODALE DETTAGLI (TIPO L'IMMAGINE) */
+        #details-modal { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.95); z-index: 25; padding: 20px; box-sizing: border-box;
+        }
+        .modal-content {
+            background: #ffeb3b; color: #000; border-radius: 15px; padding: 20px;
+            max-width: 300px; margin: auto; position: relative;
+        }
+        .modal-img { width: 150px; height: 150px; margin: 0 auto; display: block; }
+        .stat-row { display: flex; align-items: center; gap: 5px; margin: 5px 0; }
+        .stat-label { flex: 1; font-size: 10px; }
+        .stat-bar { flex: 2; height: 8px; background: rgba(0,0,0,0.2); border-radius: 4px; overflow: hidden; }
+        .stat-fill { height: 100%; background: #2e7d32; }
+        .upg-btn {
+            background: #2e7d32; color: white; border: none; width: 100%; 
+            padding: 12px; border-radius: 8px; margin-top: 15px; font-weight: bold;
         }
 
-        .p-info { position: relative; z-index: 2; text-align: center; width: 100%; }
-        .p-role { font-size: 8px; color: #4caf50; font-weight: bold; text-shadow: 1px 1px 2px #000; }
-        .p-name { font-size: 8px; font-weight: bold; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 2px 0; }
-        .p-pwr { font-size: 14px; font-weight: bold; color: gold; text-shadow: 0 0 5px #000; }
-        .p-upg { font-size: 7px; color: #ddd; }
-        .p-lvl-tag { position: absolute; top: 5px; left: 5px; font-size: 9px; font-weight: bold; z-index: 2; background: rgba(0,0,0,0.6); padding: 2px 5px; border-radius: 4px; }
-
-        .lvl-1 { border-color: #888; } 
-        .lvl-2 { border-color: #4caf50; } 
-        .lvl-3 { border-color: #2196f3; box-shadow: 0 0 10px #2196f3; } 
-        .lvl-4 { border-color: #a333c8; box-shadow: 0 0 15px #a333c8; } 
-        .lvl-5 { border-color: #ffd700; box-shadow: 0 0 20px #ffd700; }
-
-        /* Modal Dettagli */
-        #details-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 25; padding: 20px; box-sizing: border-box; overflow-y: auto; }
-        .m-avatar { width: 120px; height: 120px; border-radius: 50%; border: 4px solid gold; margin: 0 auto 15px; display: block; background: #222; }
-        .stat-bar-bg { background: #333; height: 10px; border-radius: 5px; margin: 5px 0 10px 0; overflow: hidden; }
-        .stat-bar-fill { background: #4caf50; height: 100%; transition: width 0.3s; }
-        .upg-btn { background: gold; color: black; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: bold; margin-top: 15px; font-size: 16px; box-shadow: 0 4px 15px rgba(255,215,0,0.3); }
+        #navbar { display: flex; background: #000; padding: 10px 0; border-top: 3px solid var(--gold); }
+        .nav-item { flex: 1; text-align: center; font-size: 12px; color: #666; }
+        .nav-item.active { color: var(--gold); }
     </style>
 </head>
 <body>
 
 <div id="header">
     <button id="reset-btn" onclick="resetGame()">RESET</button>
-    <div><span class="stat-lab">Taps</span><span id="tap-count" class="stat-val">0</span></div>
-    <div><span class="stat-lab">Giro in</span><span id="spin-points" class="stat-val">0/10</span></div>
+    <div class="header-stat"><span class="stat-lab">Taps</span><span id="tap-count" class="stat-val">0</span></div>
+    <div class="header-stat"><span class="stat-lab">Giro in</span><span id="spin-points" class="stat-val">0/10</span></div>
 </div>
 
 <div id="game-area">
@@ -88,77 +118,79 @@
 
 <div id="squad-screen">
     <div id="spin-area"></div>
-    <h3 style="text-align:center; font-size:10px; color:#81c784;">CAMPO TITOLARI</h3>
+    <div class="section-title">TITOLARI (1-2-2)</div>
     <div class="row" id="row-pt"></div>
     <div class="row" id="row-df"></div>
     <div class="row" id="row-at"></div>
-    <h3 style="text-align:center; font-size:10px; color:#81c784;">PANCHINA</h3>
+    <div class="section-title">RISERVE</div>
     <div class="row" id="row-res"></div>
-    <button onclick="toggleSquad()" style="width:100%; padding:15px; background:#333; color:white; border:none; border-radius:10px; margin-top:10px; font-weight:bold;">CHIUDI</button>
+    <button onclick="toggleSquad()" style="width:100%; padding:15px; background:var(--gold); border:none; font-weight:bold; border-radius:8px;">TORNA AL CAMPO</button>
 </div>
 
 <div id="details-modal">
-    <img id="m-img" class="m-avatar" src="">
-    <h2 id="m-name" style="margin:0; text-align:center;"></h2>
-    <div id="m-role" style="color:gold; text-align:center; margin-bottom:20px; font-weight:bold;"></div>
-    <div id="stats-container"></div>
-    <div style="margin-top:20px; font-size:20px; text-align:center;">POTENZA: <span id="m-pwr" style="color:gold"></span></div>
-    <div id="m-upg-text" style="text-align:center; color:#aaa; font-size: 12px;"></div>
-    <button id="upg-action-btn" class="upg-btn"></button>
-    <button onclick="closeDetails()" style="width:100%; background:transparent; color:#888; border:1px solid #444; padding:12px; margin-top:10px; border-radius:10px;">INDIETRO</button>
+    <div class="modal-content">
+        <button onclick="closeDetails()" style="position:absolute; right:10px; top:10px; background:none; border:none; font-size:20px; font-weight:bold;">X</button>
+        <img id="m-img" class="modal-img" src="">
+        <h2 id="m-name" style="margin:5px 0; text-align:center;"></h2>
+        <p id="m-meta" style="text-align:center; font-size:10px; margin:0;"></p>
+        <div id="stats-container" style="margin-top:10px;"></div>
+        <div id="m-total" style="text-align:center; font-size:20px; margin-top:10px;"></div>
+        <button id="upg-action-btn" class="upg-btn"></button>
+    </div>
 </div>
 
 <div id="navbar">
-    <div class="nav-item active" id="nav-campo" onclick="showGame()">🏟️<br>CAMPO</div>
-    <div class="nav-item" id="nav-squadra" onclick="toggleSquad()">
-        <span id="spin-badge" class="badge" style="display:none">0</span>
-        🏃<br>SQUADRA
-    </div>
+    <div class="nav-item active" id="nav-campo" onclick="showGame()">CAMPO</div>
+    <div class="nav-item" id="nav-squadra" onclick="toggleSquad()">SQUADRA</div>
 </div>
 
 <script>
     const tg = window.Telegram.WebApp;
     const UPG_LIMITS = [0, 30, 20, 15, 10, 5];
-    const NAMES = ["Gabi", "Leo", "Cr7", "Kylian", "Ney", "Erling", "Zlatan", "Luka", "Kevin", "Ciro", "Paulo", "Theo", "Dusan", "Mike", "Lautaro", "Nicolo", "Rafael", "Harry", "Mo", "Jude"];
-    const SURNAMES = ["Gol", "Bomber", "Muro", "Saetta", "Roccia", "Drago", "Lampo", "Guantone", "Turbo", "Lince", "Titano", "Ghepardo", "Falco", "Sniper", "Ace"];
+    const NAMES = ["Leo","Zlatan","Harry","Ney","Ciro","Paulo","Rafael","Jude","Kylian","Erling"];
+    const SURNAMES = ["Bomber","Muro","Saetta","Drago","Lampo","Guantone","Ace","Roccia","Turbo"];
 
     let taps = parseInt(localStorage.getItem('taps')) || 0;
     let spins = parseInt(localStorage.getItem('spins')) || 0;
-    let squad = JSON.parse(localStorage.getItem('squad_v7')) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
-    let selectedPlayer = null;
+    let squad = JSON.parse(localStorage.getItem('squad_v9')) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
 
-    function generateRandomName() {
-        return NAMES[Math.floor(Math.random()*NAMES.length)] + " " + SURNAMES[Math.floor(Math.random()*SURNAMES.length)];
+    // Funzione per generare l'immagine in posa cartoon
+    function getPose(role, name) {
+        let poseType = "adventurer"; // Default
+        if(role.includes("PT")) poseType = "bottts"; // Portiere stile robotico/diverso
+        if(role.includes("AT")) poseType = "avataaars"; // Attaccante
+        return `https://api.dicebear.com/7.x/${poseType}/svg?seed=${name}&backgroundColor=ffd700,2e7d32`;
     }
 
-    function getAvatar(name) {
-        // Usiamo DiceBear Avataaars per uno stile cartoon simpatico
-        return `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
+    function calculateStats(p) {
+        let isGK = p.role.includes("PT");
+        let base = p.level * 30;
+        let bonus = p.upgrades * 8;
+        let bias = p.bias || 0;
+        
+        let s = {
+            VEL: Math.floor(base + (bias==0?20:5) + bonus),
+            SHO: Math.floor(base + (isGK?-20:(bias==1?20:5)) + bonus),
+            PAS: Math.floor(base + (bias==2?20:5) + bonus),
+            DEF: Math.floor(base + (isGK?30:(bias==3?20:5)) + bonus),
+            SPC: Math.floor(base + (bias==4?20:5) + bonus)
+        };
+        s.labelSPC = isGK ? "REF" : "DRI";
+        s.total = s.VEL + s.SHO + s.PAS + s.DEF + s.SPC;
+        return s;
     }
 
     function doTap() {
         taps++;
-        if (taps % 10 === 0) { spins++; localStorage.setItem('spins', spins); }
+        if (taps % 10 === 0) spins++;
         localStorage.setItem('taps', taps);
+        localStorage.setItem('spins', spins);
         updateUI();
     }
 
     function updateUI() {
         document.getElementById('tap-count').innerText = taps;
         document.getElementById('spin-points').innerText = (taps % 10) + "/10";
-        const badge = document.getElementById('spin-badge');
-        badge.style.display = spins > 0 ? "block" : "none";
-        badge.innerText = spins;
-    }
-
-    function calculateStats(p) {
-        let isGK = p.role.includes("PT");
-        let base = p.level * 20;
-        let bonus = p.upgrades * 4;
-        let s = { vel: base+bonus, tiro: base+bonus+(isGK?-10:5), pass: base+bonus, dif: base+bonus+(isGK?15:0), special: base+bonus+10 };
-        s.labelSpecial = isGK ? "Riflessi" : "Dribbling";
-        s.total = Math.floor(Object.values(s).filter(v => typeof v === 'number').reduce((a,b)=>a+b, 0));
-        return s;
     }
 
     function spinWheel() {
@@ -166,102 +198,85 @@
         spins--;
         const roles = ['pt', 'df', 'at', 'res_pt', 'res_df', 'res_at'];
         const role = roles[Math.floor(Math.random() * roles.length)];
-        const rand = Math.random() * 100;
-        let lv = rand < 1 ? 5 : rand < 5 ? 4 : rand < 15 ? 3 : rand < 45 ? 2 : 1;
+        const lv = Math.random() < 0.05 ? 5 : (Math.random() < 0.2 ? 3 : 1);
         
-        let pName = generateRandomName();
+        let pName = NAMES[Math.floor(Math.random()*NAMES.length)] + " " + SURNAMES[Math.floor(Math.random()*SURNAMES.length)];
         const newPlayer = { 
-            level: lv, 
-            name: pName, 
-            avatar: getAvatar(pName),
-            upgrades: 0, 
-            role: role.replace('res_', 'R-').toUpperCase() 
+            name: pName, level: lv, upgrades: 0, 
+            role: role.replace('res_','R-').toUpperCase(), 
+            bias: Math.floor(Math.random()*5),
+            img: getPose(role.toUpperCase(), pName)
         };
-        
+
         let assigned = false;
         if (['pt','df','at'].includes(role)) {
-            let max = role === 'pt' ? 1 : 2;
-            if (squad[role].length < max) { squad[role].push(newPlayer); assigned = true; }
-        } else if (!squad[role]) {
-            squad[role] = newPlayer; assigned = true;
-        }
+            if (squad[role].length < (role==='pt'?1:2)) { squad[role].push(newPlayer); assigned = true; }
+        } else if (!squad[role]) { squad[role] = newPlayer; assigned = true; }
 
-        if (assigned) alert("TROVATO: " + newPlayer.name);
-        localStorage.setItem('squad_v7', JSON.stringify(squad));
+        alert(assigned ? "TROVATO: " + newPlayer.name : "SLOT PIENO!");
+        localStorage.setItem('squad_v9', JSON.stringify(squad));
+        localStorage.setItem('spins', spins);
         renderSquad();
-        updateUI();
     }
 
     function renderSquad() {
-        document.getElementById('row-pt').innerHTML = draw(squad.pt[0], 'pt', 0);
-        document.getElementById('row-df').innerHTML = draw(squad.df[0], 'df', 0) + draw(squad.df[1], 'df', 1);
-        document.getElementById('row-at').innerHTML = draw(squad.at[0], 'at', 0) + draw(squad.at[1], 'at', 1);
-        document.getElementById('row-res').innerHTML = draw(squad.res_pt, 'res_pt') + draw(squad.res_df, 'res_df') + draw(squad.res_at, 'res_at');
-
-        document.getElementById('spin-area').innerHTML = spins > 0 ? 
-            `<button onclick="spinWheel()" style="background:gold; width:100%; padding:12px; margin-bottom:15px; border-radius:8px; font-weight:bold; color:black; border:none;">GIRA RUOTA (${spins})</button>` : "";
-    }
-
-    function draw(p, roleKey, index = null) {
-        if (!p) return `<div class="player-slot" style="opacity:0.2; background: #000;"><span class="p-role">${roleKey.toUpperCase()}</span><b>VUOTO</b></div>`;
-        let stats = calculateStats(p);
-        return `
-            <div class="player-slot lvl-${p.level}" style="background-image: url('${p.avatar}')" onclick="openDetails('${roleKey}', ${index})">
+        const d = (p, k, i) => {
+            if(!p) return `<div class="player-slot" style="opacity:0.3; justify-content:center;">${k.toUpperCase()}</div>`;
+            let s = calculateStats(p);
+            return `
+            <div class="player-slot lvl-${p.level}" onclick="openDetails('${k}',${i})">
+                <div class="card-bg" style="background-image:url('${p.img}')"></div>
                 <div class="card-overlay"></div>
-                <span class="p-lvl-tag">LV. ${p.level}</span>
-                <div class="p-info">
-                    <span class="p-role">${p.role}</span><br>
-                    <span class="p-pwr">${stats.total}</span><br>
-                    <span class="p-name">${p.name}</span><br>
-                    <span class="p-upg">${p.upgrades}/${UPG_LIMITS[p.level]} UPG</span>
+                <div class="card-header"><span class="card-role">${p.role}</span><span class="card-lvl">L${p.level}</span></div>
+                <div class="card-info">
+                    <span class="card-pwr">${s.total}</span>
+                    <span class="card-name">${p.name}</span>
                 </div>
             </div>`;
+        };
+        document.getElementById('row-pt').innerHTML = d(squad.pt[0], 'pt', 0);
+        document.getElementById('row-df').innerHTML = d(squad.df[0], 'df', 0) + d(squad.df[1], 'df', 1);
+        document.getElementById('row-at').innerHTML = d(squad.at[0], 'at', 0) + d(squad.at[1], 'at', 1);
+        document.getElementById('row-res').innerHTML = d(squad.res_pt, 'res_pt', null) + d(squad.res_df, 'res_df', null) + d(squad.res_at, 'res_at', null);
+        
+        document.getElementById('spin-area').innerHTML = spins > 0 ? `<button onclick="spinWheel()" class="upg-btn" style="margin-bottom:20px;">GIRA RUOTA (${spins})</button>` : "";
     }
 
     function openDetails(role, index) {
-        let p = (index === null || (Array.isArray(squad[role]) && squad[role][index] === undefined)) ? squad[role] : squad[role][index];
-        if (!p || Array.isArray(p)) p = squad[role][0];
-        selectedPlayer = { role, index };
-        let stats = calculateStats(p);
-        
-        document.getElementById('details-modal').style.display = 'block';
-        document.getElementById('m-img').src = p.avatar;
+        let p = (index === null) ? squad[role] : squad[role][index];
+        if(!p || (Array.isArray(p) && !p[0])) return;
+        if(Array.isArray(p)) p = p[0];
+
+        let s = calculateStats(p);
+        document.getElementById('details-modal').style.display = 'flex';
+        document.getElementById('m-img').src = p.img;
         document.getElementById('m-name').innerText = p.name;
-        document.getElementById('m-role').innerText = p.role + " - GRADO " + p.level;
-        document.getElementById('m-pwr').innerText = stats.total;
-        document.getElementById('m-upg-text').innerText = `Upgrade: ${p.upgrades} / ${UPG_LIMITS[p.level]}`;
+        document.getElementById('m-meta').innerText = `RUOLO: ${p.role} | LIVELLO: ${p.level} | UPG: ${p.upgrades}/${UPG_LIMITS[p.level]}`;
+        document.getElementById('m-total').innerText = `POW: ${s.total}`;
 
-        let cost = (p.level * 100) + (p.upgrades * 50);
+        let cost = (p.level * 150) + (p.upgrades * 75);
         let btn = document.getElementById('upg-action-btn');
-        btn.innerText = p.upgrades >= UPG_LIMITS[p.level] ? "MAX LVL" : `POTENZIA (${cost} TAPS)`;
+        btn.innerText = p.upgrades >= UPG_LIMITS[p.level] ? "MAXED" : `POTENZIA (${cost} TAPS)`;
         btn.disabled = taps < cost || p.upgrades >= UPG_LIMITS[p.level];
-        btn.onclick = () => upgradePlayer(cost);
+        btn.onclick = () => {
+            taps -= cost; p.upgrades++;
+            localStorage.setItem('taps', taps); localStorage.setItem('squad_v9', JSON.stringify(squad));
+            renderSquad(); openDetails(role, index);
+        };
 
-        const labels = { vel:"Velocità", tiro:"Tiro", pass:"Passaggio", dif:"Difesa", special:stats.labelSpecial };
-        let html = "";
-        for(let k in labels) {
-            let val = stats[k];
-            html += `<div><small>${labels[k]}: ${Math.floor(val)}</small><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${val/10}%"></div></div></div>`;
+        let h = "";
+        const lbls = { VEL:"VEL", SHO:"TIR", PAS:"PAS", DEF:"DIF", SPC:s.labelSPC };
+        for(let k in lbls) {
+            h += `<div class="stat-row"><span class="stat-label">${lbls[k]}</span><div class="stat-bar"><div class="stat-fill" style="width:${s[k]/10}%"></div></div></div>`;
         }
-        document.getElementById('stats-container').innerHTML = html;
-    }
-
-    function upgradePlayer(cost) {
-        if (taps < cost) return;
-        taps -= cost;
-        let p = (selectedPlayer.index === null) ? squad[selectedPlayer.role] : squad[selectedPlayer.role][selectedPlayer.index];
-        if (!p || Array.isArray(p)) p = squad[selectedPlayer.role][0];
-        p.upgrades++;
-        localStorage.setItem('taps', taps);
-        localStorage.setItem('squad_v7', JSON.stringify(squad));
-        renderSquad();
-        openDetails(selectedPlayer.role, selectedPlayer.index);
+        document.getElementById('stats-container').innerHTML = h;
     }
 
     function closeDetails() { document.getElementById('details-modal').style.display = 'none'; }
-    function toggleSquad() { document.getElementById('squad-screen').style.display = document.getElementById('squad-screen').style.display === 'block'?'none':'block'; renderSquad(); }
+    function toggleSquad() { document.getElementById('squad-screen').style.display = 'block'; renderSquad(); }
     function showGame() { document.getElementById('squad-screen').style.display = 'none'; }
-    function resetGame() { if(confirm("Reset totale?")) { localStorage.clear(); location.reload(); } }
+    function resetGame() { if(confirm("RESET?")) { localStorage.clear(); location.reload(); } }
+
     updateUI();
 </script>
 </body>
