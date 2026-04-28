@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Soccer Stars - Official Collection</title>
+    <title>Soccer Stars - Millionaire Edition</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -102,15 +102,18 @@
     const DB_NAMES = {
         5: ["Lio Pulce Messi", "Cristiano Ronalda", "Marco Van Bastone", "Lothar Mattonaus", "George Bestia"],
         4: ["Kylian Mbappappé", "Erling Aland", "Luka Modriccia", "Karim Benzemulo", "Neymar Jrre", "Kevin De Bruyne", "Robert Lewandovino", "Harry Cannone", "Mo Salata", "Vini Juniorre", "Lautaro Toro", "Rafael Leaoia", "Jude Bellinguam", "Pedri Giallo", "Gavi Blu"],
-        3: ["Ciro Immobile fermo", "Gigio Paperumma", "Theo Ernannde", "Dusan Vlahoviccia", "Nicolò Barellino", "Federico Chiesetta", "Romelu Lucacu", "Paulo Dybalena", "Victor Osimhenne", "Khvicha Kvaraskelia", "Alvaro Moratona", "Antoine Griezmanno", "Jack Grealishia", "Declan Risotto", "Bukayo Sakata", "Son Heung-Minni", "Casemiro Seduto", "Marcus Rashfordia", "Bruno Fernandone", "Phil Fodenne", "Darwin Nunezza", "Luis Diazz", "Julian Alvarezz", "Enzo Fernandone", "Alexis Mac Allisterre"],
-        // Livelli 1 e 2 vengono generati una volta per sessione se non esistono
+        3: ["Ciro Immobile fermo", "Gigio Paperumma", "Theo Ernannde", "Dusan Vlahoviccia", "Nicolò Barellino", "Federico Chiesetta", "Romelu Lucacu", "Paulo Dybalena", "Victor Osimhenne", "Khvicha Kvaraskelia", "Alvaro Moratona", "Antoine Griezmanno", "Jack Grealishia", "Declan Risotto", "Bukayo Sakata", "Son Heung-Minni", "Casemiro Seduto", "Marcus Rashfordia", "Bruno Fernandone", "Phil Fodenne", "Darwin Nunezza", "Luis Diazz", "Julian Alvarezz", "Enzo Fernandone", "Alexis Mac Allisterre"]
     };
 
-    function generateJuniorNames(count) {
-        const n = ["Berto", "Ugo", "Ciro", "Lino", "Pino", "Gino", "Vito", "Mimo", "Tano", "Zio"];
-        const c = ["Scivolone", "Pedalino", "Frenato", "Rincorsa", "Zoppetto", "Tirolo", "Palo", "Traversa", "Angolo", "Fischietto"];
+    function generateJuniorNames(count, seedText) {
+        const n = ["Berto", "Ugo", "Ciro", "Lino", "Pino", "Gino", "Vito", "Mimo", "Tano", "Zio", "Beppe", "Aldo", "Nico", "Rino", "Saso"];
+        const c = ["Scivolone", "Pedalino", "Frenato", "Rincorsa", "Zoppetto", "Tirolo", "Palo", "Traversa", "Angolo", "Fischietto", "Zolla", "Fango", "Spalti", "Doccia", "Panchina"];
         let list = [];
-        for(let i=0; i<count; i++) list.push(n[i%n.length] + " " + c[Math.floor(i/n.length)]);
+        for(let i=0; i<count; i++) {
+            let nome = n[(i + seedText.length) % n.length];
+            let cognome = c[Math.floor(i / n.length) % c.length] + (i > 15 ? " II" : "");
+            list.push(nome + " " + cognome);
+        }
         return list;
     }
 
@@ -118,8 +121,8 @@
         5: DB_NAMES[5],
         4: DB_NAMES[4],
         3: DB_NAMES[3],
-        2: generateJuniorNames(40),
-        1: generateJuniorNames(50)
+        2: generateJuniorNames(40, "PRO"),
+        1: generateJuniorNames(50, "BASIC")
     };
 
     const COLORS = ["", "#95a5a6", "#2ecc71", "#3498db", "#9b59b6", "#f1c40f"];
@@ -128,8 +131,9 @@
     const BASE_VALUES = [0, 40, 60, 90, 150, 250];
     const UPG_VAL = [0, 2, 4, 8, 15, 30];
 
-    let taps = parseInt(localStorage.getItem('taps_v10')) || 0;
-    let squad = JSON.parse(localStorage.getItem('squad_v10')) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
+    // --- SALDO INIZIALE 2.000.000 ---
+    let taps = localStorage.getItem('taps_v11') ? parseInt(localStorage.getItem('taps_v11')) : 2000000;
+    let squad = JSON.parse(localStorage.getItem('squad_v11')) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
 
     function calculateStats(p) {
         const isPT = p.role.includes("PT");
@@ -141,16 +145,19 @@
         return { ...s, total };
     }
 
-    function doTap() { taps++; localStorage.setItem('taps_v10', taps); updateUI(); }
+    function doTap() { taps++; localStorage.setItem('taps_v11', taps); updateUI(); }
     function updateUI() { document.getElementById('tap-count').innerText = taps.toLocaleString(); }
 
     function buyPack() {
         if (taps < 300) return;
         taps -= 300; updateUI();
+        localStorage.setItem('taps_v11', taps);
         const overlay = document.getElementById('pack-overlay');
         overlay.style.display = 'flex';
         const anim = document.getElementById('anim-card');
         anim.classList.add('spinning');
+        anim.innerHTML = "?";
+        document.getElementById('close-pack').style.display = "none";
         
         setTimeout(() => {
             anim.classList.remove('spinning');
@@ -177,7 +184,7 @@
                 document.getElementById('pack-res').innerText = name.toUpperCase();
                 document.getElementById('pack-cat').innerText = CATEGORIES[lv];
                 document.getElementById('pack-cat').style.color = COLORS[lv];
-                localStorage.setItem('squad_v10', JSON.stringify(squad));
+                localStorage.setItem('squad_v11', JSON.stringify(squad));
             } else {
                 anim.innerHTML = `<div style="font-size:40px;">🚫</div>`;
                 document.getElementById('pack-res').innerText = "SLOT PIENO!";
@@ -214,20 +221,26 @@
         let cost = (p.level * 2000) + (p.upgrades * 800);
         document.getElementById('details-modal').style.display = 'flex';
         document.getElementById('m-category').innerText = CATEGORIES[p.level];
+        document.getElementById('m-category').style.color = COLORS[p.level];
         document.getElementById('m-img').src = p.img;
         document.getElementById('m-name').innerText = p.name;
         document.getElementById('m-total').innerText = `POWER: ${s.total}`;
         let btn = document.getElementById('upg-action-btn');
         btn.disabled = p.upgrades >= UPG_LIMITS[p.level] || taps < cost;
         btn.innerText = p.upgrades >= UPG_LIMITS[p.level] ? "MAX" : `POTENZIA (${cost})`;
-        btn.onclick = () => { taps -= cost; p.upgrades++; renderSquad(); openDetails(role, index); updateUI(); };
+        btn.onclick = () => { 
+            taps -= cost; p.upgrades++; 
+            localStorage.setItem('taps_v11', taps); localStorage.setItem('squad_v11', JSON.stringify(squad));
+            renderSquad(); openDetails(role, index); updateUI(); 
+        };
     }
 
     function finishPack() { document.getElementById('pack-overlay').style.display = 'none'; }
     function toggleSquad() { document.getElementById('squad-screen').style.display = 'block'; renderSquad(); }
     function showGame() { document.getElementById('squad-screen').style.display = 'none'; }
     function closeDetails() { document.getElementById('details-modal').style.display = 'none'; }
-    function resetGame() { if(confirm("RESET?")) { localStorage.clear(); location.reload(); } }
+    function resetGame() { if(confirm("VUOI RESETTARE TUTTO? (Perderai anche i 2 Milioni)")) { localStorage.clear(); location.reload(); } }
+    
     updateUI();
 </script>
 </body>
