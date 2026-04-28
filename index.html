@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Soccer Stars - Market Edition</title>
+    <title>Soccer Stars - Slot Fix</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -128,49 +128,56 @@
     const UPG_LIMITS = [0, 30, 25, 20, 15, 10];
     const COLORS = ["#b0b0b0", "#95a5a6", "#2ecc71", "#3498db", "#9b59b6", "#f1c40f"];
     const CATEGORIES = ["", "ESORDIENTE", "PROMESSA", "FUORICLASSE", "CAMPIONE", "PALLONE D'ORO"];
-    const PACK_COST = 500; // Costo per aprire un pacchetto
+    const PACK_COST = 500; 
 
     const BASE_VALUES = [0, 40, 60, 90, 150, 250]; 
     const UPG_VAL = [0, 2, 4, 8, 15, 30]; 
 
-    let taps = parseInt(localStorage.getItem('taps_v5')) || 1000000;
-    let squad = JSON.parse(localStorage.getItem('squad_v5')) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
+    let taps = parseInt(localStorage.getItem('taps_v6')) || 1000000;
+    let squad = JSON.parse(localStorage.getItem('squad_v6')) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
 
     function calculateStats(p) {
         const isPT = p.role.includes("PT");
         const b = BASE_VALUES[p.level];
         const u = p.upgrades * UPG_VAL[p.level];
-        let stats = isPT ? {
-            VEL: b + u + (p.bias==0?10:0), SHO: 0, PAS: b + u + (p.bias==2?10:0),
-            DEF: Math.round((b + u) * 1.5) + (p.bias==3?10:0), RIF: Math.round((b + u) * 1.5) + (p.bias==4?10:0)
-        } : {
-            VEL: b + u + (p.bias==0?10:0), SHO: b + u + (p.bias==1?10:0), PAS: b + u + (p.bias==2?10:0),
-            DEF: b + u + (p.bias==3?10:0), DRI: b + u + (p.bias==4?10:0)
-        };
+        
+        let stats = {};
+        if(isPT) {
+            // Formula Portiere bilanciata: Somma totale identica ai giocatori di movimento
+            stats = {
+                VEL: b + u + (p.bias==0?10:0),
+                SHO: 0,
+                PAS: b + u + (p.bias==2?10:0),
+                DEF: Math.round((b + u) * 1.5) + (p.bias==3?10:0),
+                RIF: Math.round((b + u) * 1.5) + (p.bias==4?10:0)
+            };
+        } else {
+            stats = {
+                VEL: b + u + (p.bias==0?10:0),
+                SHO: b + u + (p.bias==1?10:0),
+                PAS: b + u + (p.bias==2?10:0),
+                DEF: b + u + (p.bias==3?10:0),
+                DRI: b + u + (p.bias==4?10:0)
+            };
+        }
         let total = stats.VEL + stats.SHO + stats.PAS + stats.DEF + (isPT ? stats.RIF : stats.DRI);
         return { ...stats, total: total };
-    }
-
-    function doTap() {
-        taps++;
-        localStorage.setItem('taps_v5', taps);
-        updateUI();
     }
 
     function updateUI() {
         document.getElementById('tap-count').innerText = taps.toLocaleString();
     }
 
-    function canBuyPack() {
-        const isFull = (squad.pt.length >= 1 && squad.df.length >= 2 && squad.at.length >= 2 && 
-                        squad.res_pt !== null && squad.res_df !== null && squad.res_at !== null);
-        return taps >= PACK_COST && !isFull;
+    function doTap() {
+        taps++;
+        localStorage.setItem('taps_v6', taps);
+        updateUI();
     }
 
     function buyPack() {
-        if (!canBuyPack()) return;
+        if (taps < PACK_COST) return;
         taps -= PACK_COST;
-        localStorage.setItem('taps_v5', taps);
+        localStorage.setItem('taps_v6', taps);
         updateUI();
         
         const overlay = document.getElementById('pack-overlay');
@@ -179,39 +186,52 @@
         anim.classList.add('spinning');
         anim.innerHTML = "?";
         document.getElementById('close-pack').style.display = "none";
+        document.getElementById('pack-res').innerText = "ESTRAZIONE...";
 
         setTimeout(() => {
             anim.classList.remove('spinning');
             const rand = Math.random();
             const lv = rand < 0.05 ? 5 : (rand < 0.15 ? 4 : (rand < 0.35 ? 3 : (rand < 0.65 ? 2 : 1)));
             
-            // Trova primo slot libero disponibile
-            let possibleRoles = [];
-            if(squad.pt.length < 1) possibleRoles.push('pt');
-            if(squad.df.length < 2) possibleRoles.push('df');
-            if(squad.at.length < 2) possibleRoles.push('at');
-            if(!squad.res_pt) possibleRoles.push('res_pt');
-            if(!squad.res_df) possibleRoles.push('res_df');
-            if(!squad.res_at) possibleRoles.push('res_at');
-
-            const r = possibleRoles[Math.floor(Math.random() * possibleRoles.length)];
+            // 1. Estrai un ruolo a caso tra i 3 base
+            const baseRoles = ['PT', 'DF', 'AT'];
+            const chosenRole = baseRoles[Math.floor(Math.random() * baseRoles.length)];
             const name = ["Leo","Mike","Jude","Kylian","Erling","Zlatan","Theo","Luka"][Math.floor(Math.random()*8)] + " " + ["Ace","Star","Pro"][Math.floor(Math.random()*3)];
             
             const newP = { 
                 name: name, level: lv, upgrades: 0, 
-                role: r.replace('res_','R-').toUpperCase(), bias: Math.floor(Math.random()*5),
+                role: chosenRole, bias: Math.floor(Math.random()*5),
                 img: `https://api.dicebear.com/7.x/${lv>=4?'avataaars':'adventurer'}/svg?seed=${name}`
             };
 
-            if (['pt','df','at'].includes(r)) squad[r].push(newP); else squad[r] = newP;
-            
-            anim.innerHTML = `<img src="${newP.img}" width="100%">`;
+            // 2. Prova a inserirlo in squadra o riserva
+            let ok = false;
+            let finalKey = "";
+            const k = chosenRole.toLowerCase();
+
+            if (squad[k].length < (k==='pt'?1:2)) {
+                squad[k].push(newP);
+                ok = true;
+            } else if (!squad['res_'+k]) {
+                newP.role = "R-" + chosenRole;
+                squad['res_'+k] = newP;
+                ok = true;
+            }
+
             anim.style.borderColor = COLORS[lv];
-            document.getElementById('pack-res').innerText = name.toUpperCase();
-            document.getElementById('pack-cat').innerText = CATEGORIES[lv];
-            document.getElementById('pack-cat').style.color = COLORS[lv];
+            if(ok) {
+                anim.innerHTML = `<img src="${newP.img}" width="100%">`;
+                document.getElementById('pack-res').innerText = name.toUpperCase();
+                document.getElementById('pack-cat').innerText = CATEGORIES[lv];
+                document.getElementById('pack-cat').style.color = COLORS[lv];
+                localStorage.setItem('squad_v6', JSON.stringify(squad));
+            } else {
+                anim.innerHTML = `<div style="font-size:40px;">🚫</div>`;
+                document.getElementById('pack-res').innerText = "SLOT " + chosenRole + " PIENI!";
+                document.getElementById('pack-cat').innerText = "CARTA DISPERSA";
+                document.getElementById('pack-cat').style.color = "#ff4444";
+            }
             
-            localStorage.setItem('squad_v5', JSON.stringify(squad));
             document.getElementById('close-pack').style.display = "block";
             renderSquad();
         }, 1200);
@@ -235,7 +255,7 @@
         document.getElementById('row-res').innerHTML = draw(squad.res_pt, 'res_pt', null) + draw(squad.res_df, 'res_df', null) + draw(squad.res_at, 'res_at', null);
         
         const isFull = (squad.pt.length >= 1 && squad.df.length >= 2 && squad.at.length >= 2 && squad.res_pt && squad.res_df && squad.res_at);
-        document.getElementById('shop-area').innerHTML = `<button onclick="buyPack()" class="upg-btn" ${canBuyPack()?'':'disabled'} style="background:var(--gold); color:black; margin: 2px 0; padding:10px;">${isFull ? 'SQUADRA COMPLETA' : 'COMPRA PACCHETTO ('+PACK_COST+' Tap)'}</button>`;
+        document.getElementById('shop-area').innerHTML = `<button onclick="buyPack()" class="upg-btn" ${(taps < PACK_COST || isFull)?'disabled':''} style="background:var(--gold); color:black; margin: 2px 0; padding:10px;">${isFull ? 'SQUADRA COMPLETA' : 'COMPRA PACCHETTO ('+PACK_COST+' Tap)'}</button>`;
     }
 
     function openDetails(role, index) {
@@ -252,14 +272,14 @@
         document.getElementById('m-img').src = p.img;
         document.getElementById('m-name').innerText = p.name;
         document.getElementById('m-meta').innerText = `${p.role} | LV ${p.level}`;
-        document.getElementById('m-total').innerText = `POWER: ${s.total}`;
+        document.getElementById('m-total').innerText = `TOTAL POWER: ${s.total}`;
         
         let btn = document.getElementById('upg-action-btn');
         btn.disabled = isM || taps < cost;
         btn.innerText = isM ? "POTENZIAMENTO MAX" : `UPGRADE - ${cost.toLocaleString()} TAPS`;
         btn.onclick = () => {
             taps -= cost; p.upgrades++;
-            localStorage.setItem('taps_v5', taps); localStorage.setItem('squad_v5', JSON.stringify(squad));
+            localStorage.setItem('taps_v6', taps); localStorage.setItem('squad_v6', JSON.stringify(squad));
             renderSquad(); openDetails(role, index); updateUI();
         };
 
