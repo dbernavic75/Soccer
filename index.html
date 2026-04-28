@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Soccer Stars - Final Balance</title>
+    <title>Soccer Stars - Market Edition</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -18,15 +18,14 @@
 
         #header { padding: 8px; background: #000; border-bottom: 2px solid var(--gold); display: flex; justify-content: space-between; align-items: center; z-index: 5; }
         .header-stat { text-align: center; flex: 1; }
-        .stat-val { font-size: 16px; color: var(--gold); display: block; }
-        .stat-lab { font-size: 7px; text-transform: uppercase; color: #aaa; }
+        .stat-val { font-size: 18px; color: var(--gold); display: block; }
+        .stat-lab { font-size: 8px; text-transform: uppercase; color: #aaa; }
         #reset-btn { background: #ff4444; border: none; color: white; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer; }
 
         #game-area { flex: 1; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #2e7d32 0%, #1a472a 100%); }
         #ball { width: 120px; cursor: pointer; transition: 0.1s; }
         #ball:active { transform: scale(0.8); }
 
-        /* PACK ANIMATION COLORATA */
         #pack-overlay { 
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.95); z-index: 100; align-items: center; justify-content: center; flex-direction: column; 
@@ -69,6 +68,7 @@
         #details-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 25; padding: 20px; box-sizing: border-box; align-items: center; justify-content: center; }
         .modal-content { background: #fff; color: #000; border-radius: 15px; padding: 20px; width: 100%; max-width: 300px; position: relative; }
         .upg-btn { background: #1a472a; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; margin-top: 10px; font-weight: bold; cursor: pointer; }
+        .upg-btn:disabled { background: #444; color: #888; cursor: not-allowed; }
 
         #navbar { display: flex; background: #000; padding: 10px 0; border-top: 2px solid var(--gold); }
         .nav-item { flex: 1; text-align: center; font-size: 11px; color: #666; cursor: pointer; }
@@ -79,8 +79,7 @@
 
 <div id="header">
     <button id="reset-btn" onclick="resetGame()">RESET</button>
-    <div class="header-stat"><span class="stat-lab">Taps</span><span id="tap-count" class="stat-val">0</span></div>
-    <div class="header-stat"><span class="stat-lab">Giri</span><span id="spin-points" class="stat-val">0</span></div>
+    <div class="header-stat"><span class="stat-lab">I tuoi Tap</span><span id="tap-count" class="stat-val">0</span></div>
 </div>
 
 <div id="game-area">
@@ -95,7 +94,7 @@
 </div>
 
 <div id="squad-screen">
-    <div id="spin-area"></div>
+    <div id="shop-area"></div>
     <div class="section-title">TITOLARI</div>
     <div class="row" id="row-pt"></div>
     <div class="row" id="row-df"></div>
@@ -129,78 +128,73 @@
     const UPG_LIMITS = [0, 30, 25, 20, 15, 10];
     const COLORS = ["#b0b0b0", "#95a5a6", "#2ecc71", "#3498db", "#9b59b6", "#f1c40f"];
     const CATEGORIES = ["", "ESORDIENTE", "PROMESSA", "FUORICLASSE", "CAMPIONE", "PALLONE D'ORO"];
-    
-    // POTENZA BASE (Ricalibrata per sovrapposizione)
+    const PACK_COST = 500; // Costo per aprire un pacchetto
+
     const BASE_VALUES = [0, 40, 60, 90, 150, 250]; 
     const UPG_VAL = [0, 2, 4, 8, 15, 30]; 
 
-    let taps = parseInt(localStorage.getItem('taps_v4')) || 1000000;
-    let spins = parseInt(localStorage.getItem('spins_v4')) || 1000;
-    let squad = JSON.parse(localStorage.getItem('squad_v4')) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
+    let taps = parseInt(localStorage.getItem('taps_v5')) || 1000000;
+    let squad = JSON.parse(localStorage.getItem('squad_v5')) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
 
     function calculateStats(p) {
         const isPT = p.role.includes("PT");
         const b = BASE_VALUES[p.level];
         const u = p.upgrades * UPG_VAL[p.level];
-        
-        let stats = {};
-        if(isPT) {
-            // Bilanciamento Portiere: Sostituiamo il tiro con bonus massicci a Difesa e Riflessi
-            stats = {
-                VEL: b + u + (p.bias==0?10:0),
-                SHO: 0, 
-                PAS: b + u + (p.bias==2?10:0),
-                DEF: Math.round((b + u) * 1.5) + (p.bias==3?10:0),
-                RIF: Math.round((b + u) * 1.5) + (p.bias==4?10:0)
-            };
-        } else {
-            stats = {
-                VEL: b + u + (p.bias==0?10:0),
-                SHO: b + u + (p.bias==1?10:0),
-                PAS: b + u + (p.bias==2?10:0),
-                DEF: b + u + (p.bias==3?10:0),
-                DRI: b + u + (p.bias==4?10:0)
-            };
-        }
-        
+        let stats = isPT ? {
+            VEL: b + u + (p.bias==0?10:0), SHO: 0, PAS: b + u + (p.bias==2?10:0),
+            DEF: Math.round((b + u) * 1.5) + (p.bias==3?10:0), RIF: Math.round((b + u) * 1.5) + (p.bias==4?10:0)
+        } : {
+            VEL: b + u + (p.bias==0?10:0), SHO: b + u + (p.bias==1?10:0), PAS: b + u + (p.bias==2?10:0),
+            DEF: b + u + (p.bias==3?10:0), DRI: b + u + (p.bias==4?10:0)
+        };
         let total = stats.VEL + stats.SHO + stats.PAS + stats.DEF + (isPT ? stats.RIF : stats.DRI);
         return { ...stats, total: total };
     }
 
     function doTap() {
         taps++;
-        if (taps % 10 === 0) { spins++; localStorage.setItem('spins_v4', spins); }
-        localStorage.setItem('taps_v4', taps);
+        localStorage.setItem('taps_v5', taps);
         updateUI();
     }
 
     function updateUI() {
         document.getElementById('tap-count').innerText = taps.toLocaleString();
-        document.getElementById('spin-points').innerText = spins.toLocaleString();
     }
 
-    function startSpin() {
-        if (spins <= 0) return;
-        spins--;
-        localStorage.setItem('spins_v4', spins);
-        renderSquad();
+    function canBuyPack() {
+        const isFull = (squad.pt.length >= 1 && squad.df.length >= 2 && squad.at.length >= 2 && 
+                        squad.res_pt !== null && squad.res_df !== null && squad.res_at !== null);
+        return taps >= PACK_COST && !isFull;
+    }
 
+    function buyPack() {
+        if (!canBuyPack()) return;
+        taps -= PACK_COST;
+        localStorage.setItem('taps_v5', taps);
+        updateUI();
+        
         const overlay = document.getElementById('pack-overlay');
         overlay.style.display = 'flex';
         const anim = document.getElementById('anim-card');
         anim.classList.add('spinning');
-        anim.style.boxShadow = "0 0 30px white";
         anim.innerHTML = "?";
         document.getElementById('close-pack').style.display = "none";
-        document.getElementById('pack-res').innerText = "ESTRAZIONE...";
-        document.getElementById('pack-cat').innerText = "";
 
         setTimeout(() => {
             anim.classList.remove('spinning');
             const rand = Math.random();
             const lv = rand < 0.05 ? 5 : (rand < 0.15 ? 4 : (rand < 0.35 ? 3 : (rand < 0.65 ? 2 : 1)));
-            const roles = ['pt', 'df', 'at', 'res_pt', 'res_df', 'res_at'];
-            const r = roles[Math.floor(Math.random() * roles.length)];
+            
+            // Trova primo slot libero disponibile
+            let possibleRoles = [];
+            if(squad.pt.length < 1) possibleRoles.push('pt');
+            if(squad.df.length < 2) possibleRoles.push('df');
+            if(squad.at.length < 2) possibleRoles.push('at');
+            if(!squad.res_pt) possibleRoles.push('res_pt');
+            if(!squad.res_df) possibleRoles.push('res_df');
+            if(!squad.res_at) possibleRoles.push('res_at');
+
+            const r = possibleRoles[Math.floor(Math.random() * possibleRoles.length)];
             const name = ["Leo","Mike","Jude","Kylian","Erling","Zlatan","Theo","Luka"][Math.floor(Math.random()*8)] + " " + ["Ace","Star","Pro"][Math.floor(Math.random()*3)];
             
             const newP = { 
@@ -209,20 +203,15 @@
                 img: `https://api.dicebear.com/7.x/${lv>=4?'avataaars':'adventurer'}/svg?seed=${name}`
             };
 
+            if (['pt','df','at'].includes(r)) squad[r].push(newP); else squad[r] = newP;
+            
             anim.innerHTML = `<img src="${newP.img}" width="100%">`;
             anim.style.borderColor = COLORS[lv];
-            anim.style.boxShadow = `0 0 30px ${COLORS[lv]}`;
-            
-            let ok = false;
-            if (['pt','df','at'].includes(r)) {
-                if (squad[r].length < (r==='pt'?1:2)) { squad[r].push(newP); ok = true; }
-            } else if (!squad[r]) { squad[r] = newP; ok = true; }
-
-            document.getElementById('pack-res').innerText = ok ? name.toUpperCase() : "SLOT PIENO!";
+            document.getElementById('pack-res').innerText = name.toUpperCase();
             document.getElementById('pack-cat').innerText = CATEGORIES[lv];
             document.getElementById('pack-cat').style.color = COLORS[lv];
             
-            if(ok) localStorage.setItem('squad_v4', JSON.stringify(squad));
+            localStorage.setItem('squad_v5', JSON.stringify(squad));
             document.getElementById('close-pack').style.display = "block";
             renderSquad();
         }, 1200);
@@ -234,10 +223,9 @@
         const draw = (p, k, i) => {
             if(!p) return `<div class="player-slot" style="opacity:0.2; justify-content:center; align-items:center; font-size:8px;">${k.toUpperCase()}</div>`;
             let s = calculateStats(p);
-            let isM = p.upgrades >= UPG_LIMITS[p.level];
             return `<div class="player-slot lvl-${p.level}" onclick="openDetails('${k}',${i})">
                 <div class="card-bg" style="background-image:url('${p.img}')"></div><div class="card-overlay"></div>
-                <div class="card-header"><span class="tag-lvl">LV ${p.level}</span><span class="tag-upg">${isM?'MAX':p.upgrades}</span></div>
+                <div class="card-header"><span class="tag-lvl">LV ${p.level}</span><span class="tag-upg">${p.upgrades >= UPG_LIMITS[p.level]?'MAX':p.upgrades}</span></div>
                 <div class="card-info"><span class="card-pwr">${s.total}</span><span class="card-name">${p.name}</span></div>
             </div>`;
         };
@@ -245,7 +233,9 @@
         document.getElementById('row-df').innerHTML = draw(squad.df[0], 'df', 0) + draw(squad.df[1], 'df', 1);
         document.getElementById('row-at').innerHTML = draw(squad.at[0], 'at', 0) + draw(squad.at[1], 'at', 1);
         document.getElementById('row-res').innerHTML = draw(squad.res_pt, 'res_pt', null) + draw(squad.res_df, 'res_df', null) + draw(squad.res_at, 'res_at', null);
-        document.getElementById('spin-area').innerHTML = spins > 0 ? `<button onclick="startSpin()" class="upg-btn" style="background:var(--gold); color:black; margin: 2px 0; padding:8px;">APRI PACCHETTO (${spins})</button>` : "";
+        
+        const isFull = (squad.pt.length >= 1 && squad.df.length >= 2 && squad.at.length >= 2 && squad.res_pt && squad.res_df && squad.res_at);
+        document.getElementById('shop-area').innerHTML = `<button onclick="buyPack()" class="upg-btn" ${canBuyPack()?'':'disabled'} style="background:var(--gold); color:black; margin: 2px 0; padding:10px;">${isFull ? 'SQUADRA COMPLETA' : 'COMPRA PACCHETTO ('+PACK_COST+' Tap)'}</button>`;
     }
 
     function openDetails(role, index) {
@@ -261,15 +251,15 @@
         document.getElementById('m-category').style.color = COLORS[p.level];
         document.getElementById('m-img').src = p.img;
         document.getElementById('m-name').innerText = p.name;
-        document.getElementById('m-meta').innerText = `${p.role} | LV ${p.level} | UP ${p.upgrades}/${UPG_LIMITS[p.level]}`;
-        document.getElementById('m-total').innerText = `TOTAL POWER: ${s.total}`;
+        document.getElementById('m-meta').innerText = `${p.role} | LV ${p.level}`;
+        document.getElementById('m-total').innerText = `POWER: ${s.total}`;
         
         let btn = document.getElementById('upg-action-btn');
         btn.disabled = isM || taps < cost;
         btn.innerText = isM ? "POTENZIAMENTO MAX" : `UPGRADE - ${cost.toLocaleString()} TAPS`;
         btn.onclick = () => {
             taps -= cost; p.upgrades++;
-            localStorage.setItem('taps_v4', taps); localStorage.setItem('squad_v4', JSON.stringify(squad));
+            localStorage.setItem('taps_v5', taps); localStorage.setItem('squad_v5', JSON.stringify(squad));
             renderSquad(); openDetails(role, index); updateUI();
         };
 
@@ -292,7 +282,7 @@
     function closeDetails() { document.getElementById('details-modal').style.display = 'none'; }
     function toggleSquad() { document.getElementById('squad-screen').style.display = 'block'; renderSquad(); }
     function showGame() { document.getElementById('squad-screen').style.display = 'none'; }
-    function resetGame() { if(confirm("RESET TOTALE?")) { localStorage.clear(); location.reload(); } }
+    function resetGame() { if(confirm("RESET?")) { localStorage.clear(); location.reload(); } }
     
     updateUI();
 </script>
