@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Soccer Stars - No Decimals & Overlap</title>
+    <title>Soccer Stars - Final Balance</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -26,13 +26,25 @@
         #ball { width: 120px; cursor: pointer; transition: 0.1s; }
         #ball:active { transform: scale(0.8); }
 
+        /* PACK ANIMATION COLORATA */
         #pack-overlay { 
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.95); z-index: 100; align-items: center; justify-content: center; flex-direction: column; 
         }
-        .anim-card { width: 140px; height: 210px; border: 5px solid white; border-radius: 12px; background: #222; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .spinning { animation: spin 0.2s infinite linear; }
+        .anim-card { 
+            width: 140px; height: 210px; border: 6px solid white; border-radius: 12px; 
+            background: #222; display: flex; align-items: center; justify-content: center; overflow: hidden; 
+        }
+        .spinning { animation: spin 0.3s infinite linear, colorShift 0.3s infinite linear; }
+        
         @keyframes spin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
+        @keyframes colorShift {
+            0% { border-color: var(--rarity-1); box-shadow: 0 0 20px var(--rarity-1); }
+            25% { border-color: var(--rarity-2); box-shadow: 0 0 20px var(--rarity-2); }
+            50% { border-color: var(--rarity-3); box-shadow: 0 0 20px var(--rarity-3); }
+            75% { border-color: var(--rarity-4); box-shadow: 0 0 20px var(--rarity-4); }
+            100% { border-color: var(--rarity-5); box-shadow: 0 0 20px var(--rarity-5); }
+        }
 
         #squad-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f2b1a; z-index: 10; padding: 5px; box-sizing: border-box; }
         .section-title { text-align: center; color: var(--gold); font-size: 10px; margin: 4px 0; border-bottom: 1px solid rgba(255,215,0,0.3); }
@@ -118,37 +130,47 @@
     const COLORS = ["#b0b0b0", "#95a5a6", "#2ecc71", "#3498db", "#9b59b6", "#f1c40f"];
     const CATEGORIES = ["", "ESORDIENTE", "PROMESSA", "FUORICLASSE", "CAMPIONE", "PALLONE D'ORO"];
     
-    // POTENZA BASE (Valori fissi senza decimali)
+    // POTENZA BASE (Ricalibrata per sovrapposizione)
     const BASE_VALUES = [0, 40, 60, 90, 150, 250]; 
-    // INCREMENTO FISSO PER OGNI UPGRADE (X5 per ogni stat)
-    const UPG_VAL = [0, 1, 2, 4, 8, 15]; 
+    const UPG_VAL = [0, 2, 4, 8, 15, 30]; 
 
-    let taps = parseInt(localStorage.getItem('taps_v3')) || 1000000;
-    let spins = parseInt(localStorage.getItem('spins_v3')) || 1000;
-    let squad = JSON.parse(localStorage.getItem('squad_v3')) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
+    let taps = parseInt(localStorage.getItem('taps_v4')) || 1000000;
+    let spins = parseInt(localStorage.getItem('spins_v4')) || 1000;
+    let squad = JSON.parse(localStorage.getItem('squad_v4')) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
 
     function calculateStats(p) {
         const isPT = p.role.includes("PT");
         const b = BASE_VALUES[p.level];
         const u = p.upgrades * UPG_VAL[p.level];
         
-        // Assegnazione punti bilanciata per ruolo
-        let stats = {
-            VEL: b + u + (p.bias==0?10:0),
-            SHO: isPT ? 5 : (b + u + (p.bias==1?10:0)),
-            PAS: b + u + (p.bias==2?10:0),
-            DEF: isPT ? (b*2 + u*2) : (b + u + (p.bias==3?10:0)),
-            RIF: isPT ? (b*2 + u*2) : (b + u + (p.bias==4?10:0))
-        };
+        let stats = {};
+        if(isPT) {
+            // Bilanciamento Portiere: Sostituiamo il tiro con bonus massicci a Difesa e Riflessi
+            stats = {
+                VEL: b + u + (p.bias==0?10:0),
+                SHO: 0, 
+                PAS: b + u + (p.bias==2?10:0),
+                DEF: Math.round((b + u) * 1.5) + (p.bias==3?10:0),
+                RIF: Math.round((b + u) * 1.5) + (p.bias==4?10:0)
+            };
+        } else {
+            stats = {
+                VEL: b + u + (p.bias==0?10:0),
+                SHO: b + u + (p.bias==1?10:0),
+                PAS: b + u + (p.bias==2?10:0),
+                DEF: b + u + (p.bias==3?10:0),
+                DRI: b + u + (p.bias==4?10:0)
+            };
+        }
         
-        let total = stats.VEL + stats.SHO + stats.PAS + stats.DEF + stats.RIF;
+        let total = stats.VEL + stats.SHO + stats.PAS + stats.DEF + (isPT ? stats.RIF : stats.DRI);
         return { ...stats, total: total };
     }
 
     function doTap() {
         taps++;
-        if (taps % 10 === 0) { spins++; localStorage.setItem('spins_v3', spins); }
-        localStorage.setItem('taps_v3', taps);
+        if (taps % 10 === 0) { spins++; localStorage.setItem('spins_v4', spins); }
+        localStorage.setItem('taps_v4', taps);
         updateUI();
     }
 
@@ -160,15 +182,18 @@
     function startSpin() {
         if (spins <= 0) return;
         spins--;
-        localStorage.setItem('spins_v3', spins);
+        localStorage.setItem('spins_v4', spins);
         renderSquad();
 
         const overlay = document.getElementById('pack-overlay');
         overlay.style.display = 'flex';
         const anim = document.getElementById('anim-card');
         anim.classList.add('spinning');
+        anim.style.boxShadow = "0 0 30px white";
         anim.innerHTML = "?";
         document.getElementById('close-pack').style.display = "none";
+        document.getElementById('pack-res').innerText = "ESTRAZIONE...";
+        document.getElementById('pack-cat').innerText = "";
 
         setTimeout(() => {
             anim.classList.remove('spinning');
@@ -186,6 +211,7 @@
 
             anim.innerHTML = `<img src="${newP.img}" width="100%">`;
             anim.style.borderColor = COLORS[lv];
+            anim.style.boxShadow = `0 0 30px ${COLORS[lv]}`;
             
             let ok = false;
             if (['pt','df','at'].includes(r)) {
@@ -196,10 +222,10 @@
             document.getElementById('pack-cat').innerText = CATEGORIES[lv];
             document.getElementById('pack-cat').style.color = COLORS[lv];
             
-            if(ok) localStorage.setItem('squad_v3', JSON.stringify(squad));
+            if(ok) localStorage.setItem('squad_v4', JSON.stringify(squad));
             document.getElementById('close-pack').style.display = "block";
             renderSquad();
-        }, 800);
+        }, 1200);
     }
 
     function finishPack() { document.getElementById('pack-overlay').style.display = 'none'; }
@@ -236,26 +262,28 @@
         document.getElementById('m-img').src = p.img;
         document.getElementById('m-name').innerText = p.name;
         document.getElementById('m-meta').innerText = `${p.role} | LV ${p.level} | UP ${p.upgrades}/${UPG_LIMITS[p.level]}`;
-        document.getElementById('m-total').innerText = `TOTAL: ${s.total}`;
+        document.getElementById('m-total').innerText = `TOTAL POWER: ${s.total}`;
         
         let btn = document.getElementById('upg-action-btn');
         btn.disabled = isM || taps < cost;
-        btn.innerText = isM ? "MASSIMO LIVELLO" : `UPGRADE (+${UPG_VAL[p.level]*5} POW) - ${cost.toLocaleString()} TAPS`;
+        btn.innerText = isM ? "POTENZIAMENTO MAX" : `UPGRADE - ${cost.toLocaleString()} TAPS`;
         btn.onclick = () => {
             taps -= cost; p.upgrades++;
-            localStorage.setItem('taps_v3', taps); localStorage.setItem('squad_v3', JSON.stringify(squad));
+            localStorage.setItem('taps_v4', taps); localStorage.setItem('squad_v4', JSON.stringify(squad));
             renderSquad(); openDetails(role, index); updateUI();
         };
 
-        const lbls = { VEL:"VEL", SHO:"TIR", PAS:"PAS", DEF:p.role.includes("PT")?"PRESA":"DIF", RIF:p.role.includes("PT")?"RIF":"DRI" };
+        const isPT = p.role.includes("PT");
+        const lbls = { VEL:"VEL", SHO:"TIR", PAS:"PAS", DEF:isPT?"PRESA":"DIF", X:isPT?"RIF":"DRI" };
         let h = "";
         for(let k in lbls) {
+            let val = (k === 'X') ? (isPT ? s.RIF : s.DRI) : s[k];
             h += `<div style="display:flex; align-items:center; gap:5px; margin:4px 0; font-size:10px;">
                 <span style="width:35px; font-weight:bold;">${lbls[k]}</span>
                 <div style="flex:1; height:8px; background:#eee; border-radius:4px; overflow:hidden;">
-                    <div style="width:${Math.min(s[k]/6, 100)}%; height:100%; background:#1a472a;"></div>
+                    <div style="width:${Math.min(val/8, 100)}%; height:100%; background:#1a472a;"></div>
                 </div>
-                <span style="width:25px; text-align:right;">${s[k]}</span>
+                <span style="width:25px; text-align:right;">${val}</span>
             </div>`;
         }
         document.getElementById('stats-container').innerHTML = h;
