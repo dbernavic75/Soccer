@@ -3,12 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Soccer Stars - Card Animation</title>
+    <title>Soccer Stars - Test Mode</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
             --gold: #ffd700;
-            --rarity-1: #b0b0b0; --rarity-2: #4caf50; --rarity-3: #2196f3; --rarity-4: #a333c8; --rarity-5: #ff9800;
+            --rarity-1: #95a5a6; /* Esordiente */
+            --rarity-2: #2ecc71; /* Promessa */
+            --rarity-3: #3498db; /* Fuoriclasse */
+            --rarity-4: #9b59b6; /* Campione */
+            --rarity-5: #f1c40f; /* Pallone d'Oro */
         }
 
         body { 
@@ -16,43 +20,39 @@
             display: flex; flex-direction: column; height: 100vh; overflow: hidden; 
         }
 
-        /* HEADER */
         #header { padding: 10px; background: #000; border-bottom: 3px solid var(--gold); display: flex; justify-content: space-between; align-items: center; z-index: 5; }
         .header-stat { text-align: center; flex: 1; }
         .stat-val { font-size: 18px; color: var(--gold); display: block; }
         .stat-lab { font-size: 8px; text-transform: uppercase; color: #aaa; }
         #reset-btn { background: #ff4444; border: none; color: white; padding: 5px 10px; border-radius: 5px; font-weight: bold; cursor: pointer; }
 
-        /* AREA DI GIOCO */
         #game-area { flex: 1; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #2e7d32 0%, #1a472a 100%); position: relative; }
         #ball { width: 140px; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5)); cursor: pointer; transition: 0.1s; }
         #ball:active { transform: scale(0.8); }
 
-        /* ANIMAZIONE ESTRAZIONE */
+        /* PACK ANIMATION */
         #pack-overlay { 
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center; flex-direction: column; 
+            background: rgba(0,0,0,0.95); z-index: 100; align-items: center; justify-content: center; flex-direction: column; 
         }
         .anim-card {
-            width: 150px; height: 230px; border: 5px solid white; border-radius: 15px;
-            background: #222; position: relative; transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex; align-items: center; justify-content: center; font-size: 24px;
+            width: 160px; height: 240px; border: 5px solid white; border-radius: 15px;
+            background: #222; position: relative; display: flex; align-items: center; justify-content: center;
         }
         .spinning { animation: spin 0.2s infinite linear; }
         @keyframes spin { 
             0% { transform: rotateY(0deg); border-color: var(--rarity-1); } 
-            25% { border-color: var(--rarity-2); }
-            50% { transform: rotateY(180deg); border-color: var(--rarity-3); } 
-            75% { border-color: var(--rarity-4); }
-            100% { transform: rotateY(360deg); border-color: var(--rarity-5); }
+            20% { border-color: var(--rarity-2); }
+            40% { border-color: var(--rarity-3); }
+            60% { transform: rotateY(180deg); border-color: var(--rarity-4); } 
+            80% { border-color: var(--rarity-5); }
+            100% { transform: rotateY(360deg); border-color: var(--rarity-1); }
         }
 
-        /* SCHERMATA SQUADRA */
         #squad-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f2b1a; z-index: 10; padding: 10px; box-sizing: border-box; overflow-y: auto; }
         .section-title { text-align: center; color: var(--gold); font-size: 14px; margin: 10px 0; border-bottom: 1px solid var(--gold); }
         .row { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
 
-        /* CARD DESIGN */
         .player-slot { 
             width: 98px; height: 150px; border-radius: 8px; position: relative; background: #222; border: 3px solid var(--rarity-1);
             overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 5px 15px rgba(0,0,0,0.5); cursor: pointer;
@@ -62,22 +62,24 @@
         .card-header { position: absolute; top: 3px; width: 100%; display: flex; justify-content: space-between; padding: 0 4px; z-index: 3; box-sizing: border-box; }
         .tag-lvl { background: rgba(0,0,0,0.8); color: white; padding: 1px 3px; border-radius: 3px; font-size: 8px; }
         .tag-upg { background: var(--gold); color: black; padding: 1px 3px; border-radius: 3px; font-size: 8px; font-weight: bold; }
-        .tag-upg.max { background: #ff4444; color: white; }
         .card-info { position: absolute; bottom: 6px; width: 100%; text-align: center; z-index: 3; }
         .card-pwr { font-size: 18px; color: var(--gold); display: block; }
         .card-name { font-size: 8px; text-transform: uppercase; color: #fff; }
 
-        .lvl-2 { border-color: var(--rarity-2); } .lvl-3 { border-color: var(--rarity-3); } .lvl-4 { border-color: var(--rarity-4); } .lvl-5 { border-color: var(--rarity-5); }
+        .lvl-1 { border-color: var(--rarity-1); }
+        .lvl-2 { border-color: var(--rarity-2); }
+        .lvl-3 { border-color: var(--rarity-3); }
+        .lvl-4 { border-color: var(--rarity-4); box-shadow: 0 0 10px var(--rarity-4); }
+        .lvl-5 { border-color: var(--rarity-5); box-shadow: 0 0 15px var(--rarity-5); }
 
-        /* MODALE DETTAGLI */
         #details-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 25; padding: 20px; box-sizing: border-box; align-items: center; justify-content: center; }
         .modal-content { background: #fff; color: #000; border-radius: 20px; padding: 25px; width: 100%; max-width: 320px; position: relative; }
+        .cat-label { font-size: 10px; text-transform: uppercase; padding: 2px 10px; border-radius: 10px; font-weight: bold; margin-bottom: 8px; display: inline-block; background: rgba(0,0,0,0.1); }
         .stat-row { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
         .stat-bar { flex: 1; height: 12px; background: rgba(0,0,0,0.1); border-radius: 6px; overflow: hidden; }
         .stat-fill { height: 100%; background: #1a472a; }
-        .upg-btn { background: #1a472a; color: white; border: none; width: 100%; padding: 14px; border-radius: 10px; margin-top: 15px; font-weight: bold; }
+        .upg-btn { background: #1a472a; color: white; border: none; width: 100%; padding: 14px; border-radius: 10px; margin-top: 15px; font-weight: bold; cursor: pointer; }
 
-        /* NAVBAR */
         #navbar { display: flex; background: #000; padding: 12px 0; border-top: 3px solid var(--gold); }
         .nav-item { flex: 1; text-align: center; font-size: 12px; color: #666; cursor: pointer; }
         .nav-item.active { color: var(--gold); }
@@ -98,7 +100,8 @@
 <div id="pack-overlay">
     <div id="anim-card" class="anim-card">?</div>
     <h2 id="pack-res" style="margin-top:20px; text-align:center;">ESTRAZIONE...</h2>
-    <button id="close-pack" onclick="finishPack()" style="display:none; padding:10px 30px; background:var(--gold); border:none; border-radius:8px; font-weight:bold; margin-top:10px;">OK</button>
+    <div id="pack-cat" style="font-size: 16px; font-weight: bold; margin-bottom: 15px;"></div>
+    <button id="close-pack" onclick="finishPack()" style="display:none; padding:12px 40px; background:var(--gold); border:none; border-radius:8px; font-weight:bold; cursor:pointer;">PROSEGUI</button>
 </div>
 
 <div id="squad-screen">
@@ -109,17 +112,20 @@
     <div class="row" id="row-at"></div>
     <div class="section-title">RISERVE</div>
     <div class="row" id="row-res"></div>
-    <button onclick="showGame()" style="width:100%; padding:15px; background:var(--gold); border:none; font-weight:bold; border-radius:10px; margin-bottom:30px;">TORNA AL CAMPO</button>
+    <button onclick="showGame()" style="width:100%; padding:15px; background:var(--gold); border:none; font-weight:bold; border-radius:10px; margin-bottom:30px; cursor:pointer;">TORNA AL CAMPO</button>
 </div>
 
 <div id="details-modal">
     <div class="modal-content" id="modal-box">
-        <button onclick="closeDetails()" style="position:absolute; right:15px; top:15px; background:none; border:none; font-size:28px; font-weight:bold;">×</button>
-        <img id="m-img" src="" style="width:120px; display:block; margin:auto;">
-        <h2 id="m-name" style="text-align:center; margin:10px 0;"></h2>
-        <p id="m-meta" style="text-align:center; font-size:12px; margin:0;"></p>
-        <div id="stats-container"></div>
-        <div id="m-total" style="text-align:center; font-size:24px; margin-top:10px;"></div>
+        <button onclick="closeDetails()" style="position:absolute; right:15px; top:15px; background:none; border:none; font-size:28px; font-weight:bold; cursor:pointer;">×</button>
+        <div style="text-align:center;">
+            <div id="m-category" class="cat-label"></div>
+            <img id="m-img" src="" style="width:110px; display:block; margin:auto;">
+            <h2 id="m-name" style="margin:10px 0; font-size:20px;"></h2>
+            <p id="m-meta" style="font-size:11px; margin:0; font-weight:bold;"></p>
+        </div>
+        <div id="stats-container" style="margin-top:15px;"></div>
+        <div id="m-total" style="text-align:center; font-size:24px; margin-top:10px; font-weight:bold;"></div>
         <button id="upg-action-btn" class="upg-btn"></button>
     </div>
 </div>
@@ -131,11 +137,13 @@
 
 <script>
     const UPG_LIMITS = [0, 30, 20, 15, 10, 5];
-    const COLORS = ["#b0b0b0", "#b0b0b0", "#4caf50", "#2196f3", "#a333c8", "#ff9800"];
+    const COLORS = ["#b0b0b0", "#95a5a6", "#2ecc71", "#3498db", "#9b59b6", "#f1c40f"];
+    const CATEGORIES = ["", "ESORDIENTE", "PROMESSA", "FUORICLASSE", "CAMPIONE", "PALLONE D'ORO"];
     
-    let taps = parseInt(localStorage.getItem('taps')) || 0;
-    let spins = parseInt(localStorage.getItem('spins')) || 0;
-    let squad = JSON.parse(localStorage.getItem('squad_v12')) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
+    // TEST MODE: 1 Milione di tap precaricati se non ci sono dati precedenti
+    let taps = parseInt(localStorage.getItem('taps_test')) || 1000000;
+    let spins = parseInt(localStorage.getItem('spins_test')) || 0;
+    let squad = JSON.parse(localStorage.getItem('squad_v15')) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
 
     function calculateStats(p) {
         let isGK = p.role.includes("PT");
@@ -154,49 +162,47 @@
 
     function doTap() {
         taps++;
-        if (taps % 10 === 0) { spins++; localStorage.setItem('spins', spins); }
-        localStorage.setItem('taps', taps);
+        if (taps % 10 === 0) { spins++; localStorage.setItem('spins_test', spins); }
+        localStorage.setItem('taps_test', taps);
         updateUI();
     }
 
     function updateUI() {
-        document.getElementById('tap-count').innerText = taps;
+        document.getElementById('tap-count').innerText = taps.toLocaleString();
         document.getElementById('spin-points').innerText = (taps % 10) + "/10";
     }
 
     function startSpin() {
         if (spins <= 0) return;
         spins--;
-        localStorage.setItem('spins', spins);
+        localStorage.setItem('spins_test', spins);
         renderSquad();
 
         const overlay = document.getElementById('pack-overlay');
         const card = document.getElementById('anim-card');
         const resText = document.getElementById('pack-res');
+        const catText = document.getElementById('pack-cat');
         const closeBtn = document.getElementById('close-pack');
 
         overlay.style.display = 'flex';
         card.classList.add('spinning');
         card.innerHTML = "?";
-        card.style.borderColor = "white";
         resText.innerText = "ESTRAZIONE...";
+        catText.innerText = "";
         closeBtn.style.display = "none";
 
         setTimeout(() => {
             card.classList.remove('spinning');
-            
-            // Logica rarità
             const rand = Math.random();
             const lv = rand < 0.05 ? 5 : (rand < 0.15 ? 4 : (rand < 0.35 ? 3 : (rand < 0.65 ? 2 : 1)));
-            
             const roles = ['pt', 'df', 'at', 'res_pt', 'res_df', 'res_at'];
             const r = roles[Math.floor(Math.random() * roles.length)];
-            const name = ["Leo","Mike","Jude","Kylian","Erling","Zlatan"][Math.floor(Math.random()*6)] + " " + ["Pro","King","Rex","Ace"][Math.floor(Math.random()*4)];
+            const name = ["Leo","Mike","Jude","Kylian","Erling","Zlatan","Federico","Luka"][Math.floor(Math.random()*8)] + " " + ["Pro","King","Rex","Ace","Top"][Math.floor(Math.random()*5)];
             
             const newP = { 
                 name: name, level: lv, upgrades: 0, 
                 role: r.replace('res_','R-').toUpperCase(), bias: Math.floor(Math.random()*5),
-                img: `https://api.dicebear.com/7.x/${lv==1?'adventurer':'avataaars'}/svg?seed=${name}&backgroundColor=b6e3f4`
+                img: `https://api.dicebear.com/7.x/${lv>=4?'avataaars':'adventurer'}/svg?seed=${name}&backgroundColor=b6e3f4`
             };
 
             card.innerHTML = `<img src="${newP.img}" width="100%">`;
@@ -207,24 +213,26 @@
                 if (squad[r].length < (r==='pt'?1:2)) { squad[r].push(newP); ok = true; }
             } else if (!squad[r]) { squad[r] = newP; ok = true; }
 
-            resText.innerText = ok ? `HAI TROVATO ${name.toUpperCase()}!` : "SLOT PIENO! GIOCATORE PERSO.";
-            if(ok) localStorage.setItem('squad_v12', JSON.stringify(squad));
+            resText.innerText = ok ? `${name.toUpperCase()}` : "SLOT PIENO!";
+            catText.innerText = CATEGORIES[lv];
+            catText.style.color = COLORS[lv];
             
+            if(ok) localStorage.setItem('squad_v15', JSON.stringify(squad));
             closeBtn.style.display = "block";
             renderSquad();
-        }, 2000);
+        }, 1500);
     }
 
     function finishPack() { document.getElementById('pack-overlay').style.display = 'none'; }
 
     function renderSquad() {
         const draw = (p, k, i) => {
-            if(!p) return `<div class="player-slot" style="opacity:0.2; justify-content:center; align-items:center;">${k.toUpperCase()}</div>`;
+            if(!p) return `<div class="player-slot" style="opacity:0.2; display:flex; justify-content:center; align-items:center; font-size:10px;">${k.toUpperCase()}</div>`;
             let s = calculateStats(p);
             let isM = p.upgrades >= UPG_LIMITS[p.level];
             return `<div class="player-slot lvl-${p.level}" onclick="openDetails('${k}',${i})">
                 <div class="card-bg" style="background-image:url('${p.img}')"></div><div class="card-overlay"></div>
-                <div class="card-header"><span class="tag-lvl">LV ${p.level}</span><span class="tag-upg ${isM?'max':''}">${isM?'MAX':'UPG '+p.upgrades}</span></div>
+                <div class="card-header"><span class="tag-lvl">LV ${p.level}</span><span class="tag-upg">${isM?'MAX':'UPG '+p.upgrades}</span></div>
                 <div class="card-info"><span class="card-pwr">${s.total}</span><span class="card-name">${p.name}</span></div>
             </div>`;
         };
@@ -240,35 +248,48 @@
         if(!p) return;
         let s = calculateStats(p);
         let isM = p.upgrades >= UPG_LIMITS[p.level];
+        
         document.getElementById('details-modal').style.display = 'flex';
         document.getElementById('modal-box').style.background = COLORS[p.level];
+        document.getElementById('m-category').innerText = CATEGORIES[p.level];
         document.getElementById('m-img').src = p.img;
         document.getElementById('m-name').innerText = p.name;
-        document.getElementById('m-meta').innerText = `LV ${p.level} | ${p.role} | UPG ${p.upgrades}/${UPG_LIMITS[p.level]}`;
-        document.getElementById('m-total').innerText = `TOTAL POWER: ${s.total}`;
+        document.getElementById('m-meta').innerText = `${p.role} | LV ${p.level} | UPG ${p.upgrades}/${UPG_LIMITS[p.level]}`;
+        document.getElementById('m-total').innerText = `POWER: ${s.total}`;
         
         let cost = (p.level * 200) + (p.upgrades * 100);
         let btn = document.getElementById('upg-action-btn');
         btn.disabled = isM || taps < cost;
-        btn.innerText = isM ? "POTENZIAMENTO MASSIMO" : `UPGRADE (${cost} TAPS)`;
+        btn.innerText = isM ? "POTENZIAMENTO MASSIMO" : `UPGRADE (${cost.toLocaleString()} TAPS)`;
         btn.onclick = () => {
             taps -= cost; p.upgrades++;
-            localStorage.setItem('taps', taps); localStorage.setItem('squad_v12', JSON.stringify(squad));
+            localStorage.setItem('taps_test', taps); localStorage.setItem('squad_v15', JSON.stringify(squad));
             renderSquad(); openDetails(role, index); updateUI();
         };
 
         const lbls = { VEL:"VEL", SHO:"TIR", PAS:"PAS", DEF:"DIF", SPC: p.role.includes("PT")?"REF":"DRI" };
         let h = "";
         for(let k in lbls) {
-            h += `<div class="stat-row"><span style="width:40px; font-size:10px;">${lbls[k]}</span><div class="stat-bar"><div class="stat-fill" style="width:${s[k]/8}%"></div></div><span style="width:30px; font-size:10px; text-align:right;">${s[k]}</span></div>`;
+            h += `<div class="stat-row"><span style="width:40px; font-size:10px; font-weight:bold;">${lbls[k]}</span><div class="stat-bar"><div class="stat-fill" style="width:${s[k]/8}%"></div></div><span style="width:35px; font-size:11px; text-align:right; font-weight:bold;">${s[k]}</span></div>`;
         }
         document.getElementById('stats-container').innerHTML = h;
     }
 
     function closeDetails() { document.getElementById('details-modal').style.display = 'none'; }
-    function toggleSquad() { document.getElementById('squad-screen').style.display = 'block'; renderSquad(); }
-    function showGame() { document.getElementById('squad-screen').style.display = 'none'; }
+    function toggleSquad() { 
+        document.getElementById('squad-screen').style.display = 'block'; 
+        document.getElementById('nav-squadra').classList.add('active');
+        document.getElementById('nav-campo').classList.remove('active');
+        renderSquad(); 
+    }
+    function showGame() { 
+        document.getElementById('squad-screen').style.display = 'none'; 
+        document.getElementById('nav-campo').classList.add('active');
+        document.getElementById('nav-squadra').classList.remove('active');
+    }
     function resetGame() { if(confirm("RESET?")) { localStorage.clear(); location.reload(); } }
+    
+    // Inizializzazione
     updateUI();
 </script>
 </body>
