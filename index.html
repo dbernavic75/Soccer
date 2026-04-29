@@ -5,279 +5,319 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Soccer Stars - Elite Manager</title>
     <style>
-        :root { --gold: #ffd700; --green: #1a472a; }
+        :root {
+            --gold: #ffd700;
+            --rarity-1: #95a5a6; --rarity-2: #2ecc71; --rarity-3: #3498db; --rarity-4: #9b59b6; --rarity-5: #f1c40f;
+        }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; background: #000; color: white; font-family: 'Arial Black', sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        body { 
-            margin: 0; background: #000; color: white; 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-            display: flex; flex-direction: column; height: 100vh; overflow: hidden; 
-        }
-
         /* HEADER */
-        #header { 
-            height: 60px; background: #111; border-bottom: 2px solid var(--gold); 
-            display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
-        }
+        #header { height: 60px; background: #111; border-bottom: 2px solid var(--gold); display: flex; justify-content: space-between; align-items: center; padding: 0 15px; z-index: 1000; }
         .stat-box { text-align: center; }
-        .stat-val { font-size: 20px; color: var(--gold); font-weight: bold; display: block; }
-        .stat-lab { font-size: 9px; text-transform: uppercase; color: #888; }
+        .stat-val { font-size: 18px; color: var(--gold); display: block; }
+        .stat-lab { font-size: 8px; text-transform: uppercase; color: #aaa; }
+        #reset-btn { background: #ff4444; border: none; color: white; padding: 4px 8px; border-radius: 4px; font-size: 9px; cursor: pointer; }
 
-        /* CONTENITORE SCHERMATE */
-        #main-viewport { flex: 1; position: relative; overflow: hidden; background: var(--green); }
-        .screen { display: none; width: 100%; height: 100%; overflow-y: auto; padding: 20px; padding-bottom: 100px; }
+        /* VIEWPORT PRINCIPALE */
+        #main-viewport { flex: 1; position: relative; background: #1a472a; overflow: hidden; }
+        .screen { display: none; width: 100%; height: 100%; overflow-y: auto; padding: 10px; padding-bottom: 90px; }
 
-        /* CAMPO */
+        /* CAMPO (TAP) */
         #screen-campo { display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #2e7d32 0%, #1a472a 100%); }
-        #ball { width: 160px; height: 160px; cursor: pointer; transition: transform 0.1s; z-index: 10; }
-        #ball:active { transform: scale(0.9); }
+        #ball { width: 150px; cursor: pointer; transition: 0.1s; z-index: 10; }
+        #ball:active { transform: scale(0.8); }
+
+        /* SQUADRA & CARTE */
+        .section-title { text-align: center; color: var(--gold); font-size: 10px; margin: 15px 0 5px; border-bottom: 1px solid rgba(255,215,0,0.3); }
+        .row { display: flex; justify-content: center; gap: 5px; margin-bottom: 10px; min-height: 110px; flex-wrap: wrap; }
+        .player-slot { width: 75px; height: 115px; border-radius: 6px; position: relative; background: #222; border: 2px solid #333; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; }
+        .empty-label { margin: auto; font-size: 8px; color: #555; text-align: center; text-transform: uppercase; }
+        .card-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0.6; z-index: 1; }
+        .card-header { position: absolute; top: 2px; width: 100%; display: flex; justify-content: space-between; padding: 0 4px; z-index: 3; }
+        .tag-lvl { background: rgba(0,0,0,0.8); color: white; padding: 1px 3px; border-radius: 2px; font-size: 7px; }
+        .card-info { position: absolute; bottom: 4px; width: 100%; text-align: center; z-index: 3; background: rgba(0,0,0,0.5); }
+        .card-pwr { font-size: 13px; color: var(--gold); display: block; }
+        .card-name { font-size: 6px; text-transform: uppercase; color: #fff; white-space: nowrap; overflow: hidden; }
 
         /* NAVBAR */
-        #navbar { 
-            height: 70px; background: #111; border-top: 2px solid var(--gold); 
-            display: flex; justify-content: space-around; align-items: center;
-        }
-        .nav-btn { color: #666; text-decoration: none; font-size: 11px; font-weight: bold; text-align: center; cursor: pointer; }
-        .nav-btn.active { color: var(--gold); }
-
-        /* SQUADRA & CARDS */
-        .section-title { color: var(--gold); text-align: center; margin: 15px 0 10px; font-size: 12px; border-bottom: 1px solid #333; }
-        .row { display: flex; justify-content: center; gap: 8px; margin-bottom: 10px; }
-        .player-slot { 
-            width: 75px; height: 110px; background: #222; border: 2px solid #444; 
-            border-radius: 8px; position: relative; overflow: hidden; display: flex; flex-direction: column; 
-        }
-        .card-pwr { position: absolute; top: 5px; right: 5px; color: var(--gold); font-weight: bold; font-size: 12px; z-index: 5; }
-        .card-name { position: absolute; bottom: 5px; width: 100%; text-align: center; font-size: 7px; text-transform: uppercase; z-index: 5; }
-        .card-img { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; }
-
-        /* BOTTONI */
-        .btn { 
-            background: var(--gold); color: black; border: none; padding: 12px; 
-            border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; margin: 10px 0;
-        }
-        .btn:disabled { background: #444; color: #888; }
+        #navbar { height: 70px; display: flex; background: #000; border-top: 2px solid var(--gold); position: relative; z-index: 1000; }
+        .nav-item { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #666; cursor: pointer; font-weight: bold; }
+        .nav-item.active { color: var(--gold); background: rgba(255,215,0,0.05); }
 
         /* MODALI */
-        .modal { 
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.9); z-index: 5000; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
-        }
-        #match-log { background: #000; border: 1px solid #333; width: 100%; height: 150px; padding: 10px; color: #0f0; font-family: monospace; font-size: 11px; overflow-y: auto; margin: 10px 0; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 5000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .btn-ui { border: none; font-weight: bold; border-radius: 8px; padding: 12px; cursor: pointer; width: 100%; max-width: 280px; font-family: 'Arial Black', sans-serif; text-transform: uppercase; margin: 5px 0; }
+        .btn-ui:disabled { background: #444 !important; color: #888; }
+
+        /* STATS DETAIL */
+        .stat-row { display: flex; align-items: center; gap: 5px; margin: 4px 0; font-size: 10px; color: #000; }
+        .stat-bar-bg { flex: 1; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
+        .stat-bar-fill { height: 100%; background: #1a472a; }
+
+        /* ANIMAZIONI */
+        .vibrating { animation: vibrate 0.2s infinite; border: 2px solid white !important; }
+        .target-sub { animation: vibrate 0.1s infinite; border: 2px solid var(--gold) !important; box-shadow: 0 0 15px var(--gold); }
+        @keyframes vibrate { 0% { transform: translate(0); } 25% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -1px); } 100% { transform: translate(0); } }
     </style>
 </head>
 <body>
 
 <div id="header">
-    <div class="stat-box">
-        <span class="stat-lab">Bilancio Tap</span>
-        <span id="tap-display" class="stat-val">0</span>
-    </div>
-    <button onclick="resetData()" style="background:#444; color:white; border:none; padding:5px 10px; border-radius:4px; font-size:10px;">RESET</button>
+    <button id="reset-btn" onclick="resetGame()">RESET</button>
+    <div class="stat-box"><span class="stat-lab">Bilancio Tap</span><span id="tap-count" class="stat-val">0</span></div>
 </div>
 
 <div id="main-viewport">
     <div id="screen-campo" class="screen" style="display: flex;">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/d/d3/Soccerball.svg" id="ball" onclick="handleTap()">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/d/d3/Soccerball.svg" id="ball" onclick="doTap()">
     </div>
 
     <div id="screen-squadra" class="screen">
-        <div id="shop-container">
-            <button class="btn" id="buy-btn" onclick="buyPack()">COMPRA PACCHETTO (500 TAP)</button>
+        <div style="text-align: center;">
+            <button id="buy-btn" class="btn-ui" style="background: var(--gold); color: black;" onclick="buyPack()">PACCHETTO ELITE (500 TAP)</button>
         </div>
-        <div class="section-title">TITOLARI</div>
-        <div id="row-tit" class="row" style="flex-wrap: wrap;"></div>
+        <div class="section-title">TITOLARI (POTENZA ATTUALE: <span id="team-pwr-label">0</span>)</div>
+        <div id="row-pt" class="row"></div>
+        <div id="row-df" class="row"></div>
+        <div id="row-at" class="row"></div>
         <div class="section-title">RISERVE</div>
-        <div id="row-ris" class="row" style="flex-wrap: wrap;"></div>
+        <div id="row-res" class="row"></div>
+        <button id="sub-mode-btn" class="btn-ui" style="background: #3498db; color: white; display: none;" onclick="toggleSubMode()">MODALITÀ SOSTITUZIONE</button>
     </div>
 
     <div id="screen-stadio" class="screen">
-        <h2 style="text-align:center; color:var(--gold);">ARENA SFIDE</h2>
-        <div style="background:#111; padding:20px; border-radius:12px; border:1px solid var(--gold); text-align:center;">
-            <h3 id="opp-name">---</h3>
+        <h2 style="color: var(--gold); text-align: center;">STADIO ELITE</h2>
+        <div style="background: rgba(0,0,0,0.5); border: 2px solid var(--gold); border-radius: 15px; padding: 20px; text-align: center;">
+            <p style="font-size: 10px; color: #aaa;">SFIDA CORRENTE:</p>
+            <h1 id="opp-name">---</h1>
             <p id="opp-pwr">Potenza: ---</p>
-            <p style="color:var(--gold)">Premio: <span id="opp-prize">0</span> Tap</p>
-            <button class="btn" id="play-btn" onclick="startMatch()">GIOCA PARTITA</button>
+            <p style="color: var(--gold); font-size: 12px;">Premio Vittoria: <span id="opp-prize">0</span> Tap</p>
+            <button id="start-match-btn" class="btn-ui" style="background: var(--gold); color: black;" onclick="startMatch()">GIOCA PARTITA</button>
+            <p id="match-error" style="color: #ff4444; font-size: 9px; margin-top: 10px; display: none;">Ti servono 5 titolari!</p>
         </div>
     </div>
 </div>
 
 <div id="navbar">
-    <div class="nav-btn active" id="btn-nav-campo" onclick="showScreen('campo')">CAMPO</div>
-    <div class="nav-btn" id="btn-nav-squadra" onclick="showScreen('squadra')">SQUADRA</div>
-    <div class="nav-btn" id="btn-nav-stadio" onclick="showScreen('stadio')">STADIO</div>
+    <div class="nav-item active" id="nav-campo" onclick="nav('campo')">CAMPO</div>
+    <div class="nav-item" id="nav-squadra" onclick="nav('squadra')">SQUADRA</div>
+    <div class="nav-item" id="nav-stadio" onclick="nav('stadio')">STADIO</div>
+</div>
+
+<div id="details-modal" class="modal">
+    <div style="background: #fff; color: #000; border-radius: 15px; padding: 20px; width: 90%; max-width: 300px; position: relative;">
+        <button onclick="closeDetails()" style="position:absolute; right:10px; top:10px; background:none; border:none; font-size:24px;">×</button>
+        <div id="m-role" style="font-size:9px; color:#666; text-align:center;"></div>
+        <div id="m-category" style="font-size:10px; text-align:center; font-weight:bold;"></div>
+        <img id="m-img" src="" style="width:80px; margin:10px auto; display:block;">
+        <h2 id="m-name" style="text-align:center; margin:5px 0;"></h2>
+        <div id="m-stats"></div>
+        <div id="m-total" style="text-align:center; font-size:20px; margin:10px 0; font-weight:bold;"></div>
+        <button id="upg-btn" class="btn-ui" style="background:#1a472a; color:white;"></button>
+    </div>
 </div>
 
 <div id="match-modal" class="modal">
-    <h2 id="match-score" style="font-size:40px;">0 - 0</h2>
-    <div id="match-log"></div>
-    <button id="close-match" class="btn" style="display:none" onclick="closeMatch()">CHIUDI</button>
+    <div id="score-board" style="font-size: 40px; margin-bottom: 10px;">0 - 0</div>
+    <div id="match-log" style="background:#000; color:#0f0; width:100%; height:150px; overflow-y:auto; padding:10px; font-family:monospace; font-size:11px; border:1px solid #333; border-radius:8px;"></div>
+    <button id="close-match" class="btn-ui" style="display:none; background:white; color:black;" onclick="closeMatch()">RITORNA</button>
 </div>
 
 <script>
-    // --- DATI DI GIOCO ---
-    let gameState = {
-        taps: 2000000,
-        squadra: [],
-        currentOpponent: null
+    // --- DATABASE ---
+    const DB_REAL = {
+        5: ["Lio Pulce Messi", "Cristiano Ronalda", "Marco Van Bastone", "Lothar Mattonaus", "George Bestia"],
+        4: ["Kylian Mbappappé", "Erling Aland", "Luka Modriccia", "Karim Benzemulo", "Neymar Jrre"],
+        3: ["Ciro Immobile fermo", "Gigio Paperumma", "Theo Ernannde", "Dusan Vlahoviccia", "Nicolò Barellino"]
     };
+    function genNames(c) {
+        const n=["Berto","Ugo","Ciro","Lino","Pino","Gino","Vito","Mimo","Tano","Beppe"], s=["Scivolone","Pedalino","Frenato","Rincorsa","Zoppetto","Tirolo","Palo","Traversa"];
+        let l=[]; for(let i=0;i<c;i++) l.push(n[Math.floor(Math.random()*n.length)]+" "+s[Math.floor(Math.random()*s.length)]); return l;
+    }
+    const POOL = { 5:DB_REAL[5], 4:DB_REAL[4], 3:DB_REAL[3], 2:genNames(40), 1:genNames(50) };
+    const COLORS = ["","#95a5a6","#2ecc71","#3498db","#9b59b6","#f1c40f"], CATS = ["","ESORDIENTE","PROMESSA","FUORICLASSE","CAMPIONE","PALLONE D'ORO"];
+    const LIMITS = [0,30,25,20,15,10], BASE = [0,40,60,90,150,250], VALS = [0,2,4,8,15,30];
 
-    const SAVE_KEY = "soccer_elite_vFinal";
-    const COLORS = ["", "#95a5a6", "#2ecc71", "#3498db", "#9b59b6", "#f1c40f"];
+    // --- STATO GIOCO ---
+    let taps = 2000000;
+    let squad = { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
+    let isSubMode = false, selectedSub = null, currentOpponent = null;
+    const SAVE_KEY = "soccer_stars_vFinal_Logic";
 
-    // --- INIZIALIZZAZIONE ---
     function init() {
-        const saved = localStorage.getItem(SAVE_KEY);
-        if (saved) {
-            gameState = JSON.parse(saved);
-            // Assicurati che se il salvataggio è vecchio/vuoto, ci siano i 2M
-            if (gameState.taps < 1) gameState.taps = 2000000;
+        let d = localStorage.getItem(SAVE_KEY);
+        if(d) {
+            let p = JSON.parse(d);
+            taps = p.taps || 2000000;
+            if(p.squad) squad = p.squad;
         }
         updateUI();
         generateOpponent();
     }
 
-    function save() {
-        localStorage.setItem(SAVE_KEY, JSON.stringify(gameState));
+    function save() { localStorage.setItem(SAVE_KEY, JSON.stringify({taps, squad})); }
+    function doTap() { taps++; updateUI(); save(); }
+    function updateUI() { 
+        document.getElementById('tap-count').innerText = taps.toLocaleString('it-IT');
+        document.getElementById('buy-btn').disabled = taps < 500;
     }
 
     // --- NAVIGAZIONE ---
-    function showScreen(screenId) {
-        // Nascondi tutto
+    function nav(target) {
         document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        
+        const scr = document.getElementById('screen-' + target);
+        scr.style.display = (target === 'campo') ? 'flex' : 'block';
+        document.getElementById('nav-' + target).classList.add('active');
 
-        // Mostra corrente
-        const target = document.getElementById('screen-' + screenId);
-        target.style.display = (screenId === 'campo') ? 'flex' : 'block';
-        document.getElementById('btn-nav-' + screenId).classList.add('active');
-
-        if (screenId === 'squadra') renderSquadra();
-    }
-
-    // --- LOGICA TAP ---
-    function handleTap() {
-        gameState.taps += 1;
-        updateUI();
-        save();
-    }
-
-    function updateUI() {
-        document.getElementById('tap-display').innerText = gameState.taps.toLocaleString('it-IT');
-        document.getElementById('buy-btn').disabled = (gameState.taps < 500);
+        if(target === 'squadra') renderSquad();
+        if(target === 'stadio') checkMatchReady();
     }
 
     // --- LOGICA SQUADRA ---
+    function calcStats(p) {
+        if(!p) return {total:0};
+        const isPT = p.role === "PT", b = BASE[p.level], u = p.upgrades * VALS[p.level], bonus = Math.round(u * 0.4);
+        let s = isPT ? { VEL:b+u, PAS:b+u, DEF:Math.round((b+u)*1.5), RIF:Math.round((b+u)*1.5) } : { VEL:b+u, SHO:b+u, PAS:b+u, DEF:b+u, DRI:b+u };
+        const keys = Object.keys(s); s[keys[p.bias % keys.length]] += bonus;
+        let t = 0; for(let k in s) t += s[k]; return { ...s, total: t };
+    }
+
+    function renderSquad() {
+        let totalTeamPwr = 0;
+        const draw = (p, roleKey, idx, def) => {
+            let stateClass = "";
+            if(isSubMode) {
+                if(!selectedSub && !roleKey.startsWith('res')) stateClass = "vibrating";
+                if(selectedSub && roleKey === selectedSub.role && idx === selectedSub.idx) stateClass = "vibrating";
+                if(selectedSub && (roleKey === "res_" + selectedSub.role || "res_"+roleKey === selectedSub.role)) stateClass = "target-sub";
+            }
+            if(!p) return `<div class="player-slot" onclick="handleCard('${roleKey}', ${idx})"><div class="empty-label">${def}</div></div>`;
+            const s = calcStats(p);
+            if(!roleKey.startsWith('res')) totalTeamPwr += s.total;
+            return `<div class="player-slot ${stateClass}" style="border-color:${COLORS[p.level]}" onclick="handleCard('${roleKey}', ${idx})">
+                <div class="card-bg" style="background-image:url('${p.img}')"></div>
+                <div class="card-header"><span class="tag-lvl">LV ${p.level}</span></div>
+                <div class="card-info"><span class="card-pwr">${s.total}</span><span class="card-name">${p.name}</span></div>
+            </div>`;
+        };
+
+        document.getElementById('row-pt').innerHTML = draw(squad.pt[0], 'pt', 0, 'PT');
+        document.getElementById('row-df').innerHTML = draw(squad.df[0], 'df', 0, 'DF') + draw(squad.df[1], 'df', 1, 'DF');
+        document.getElementById('row-at').innerHTML = draw(squad.at[0], 'at', 0, 'AT') + draw(squad.at[1], 'at', 1, 'AT');
+        document.getElementById('row-res').innerHTML = draw(squad.res_pt, 'res_pt', null, 'RIS PT') + draw(squad.res_df, 'res_df', null, 'RIS DF') + draw(squad.res_at, 'res_at', null, 'RIS AT');
+        
+        document.getElementById('team-pwr-label').innerText = totalTeamPwr;
+        document.getElementById('sub-mode-btn').style.display = (squad.pt.length>=1 && squad.df.length>=2 && squad.at.length>=2) ? "block" : "none";
+    }
+
     function buyPack() {
-        if (gameState.taps < 500) return;
-        gameState.taps -= 500;
+        if(taps < 500) return;
+        taps -= 500; updateUI();
+        const r = Math.random(); let lv = r<0.02?5 : r<0.08?4 : r<0.2?3 : r<0.5?2 : 1;
+        const name = POOL[lv][Math.floor(Math.random()*POOL[lv].length)];
+        const role = ['PT','DF','AT'][Math.floor(Math.random()*3)];
+        const p = { name, level: lv, upgrades: 0, role, bias: Math.floor(Math.random()*10), img: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}${Date.now()}` };
         
-        const lv = Math.random() > 0.9 ? 5 : Math.random() > 0.7 ? 3 : 1;
-        const pwr = (lv * 100) + Math.floor(Math.random() * 50);
-        const names = ["Ciro", "Berto", "Lino", "Ugo", "Mimo", "Pippo"];
-        const name = names[Math.floor(Math.random()*names.length)] + " FC";
+        let ok = false; const k = role.toLowerCase();
+        if(squad[k].length < (k==='pt'?1:2)) { squad[k].push(p); ok = true; }
+        else if(!squad['res_'+k]) { squad['res_'+k] = p; ok = true; }
         
-        const newPlayer = {
-            id: Date.now(),
-            name: name,
-            level: lv,
-            pwr: pwr,
-            img: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}${Date.now()}`
-        };
-
-        gameState.squadra.push(newPlayer);
-        save();
-        updateUI();
-        renderSquadra();
+        if(ok) { alert("Trovato: " + name); save(); renderSquad(); }
+        else { alert("Slot pieni per questo ruolo!"); taps += 500; updateUI(); }
     }
 
-    function renderSquadra() {
-        const rowTit = document.getElementById('row-tit');
-        const rowRis = document.getElementById('row-ris');
-        rowTit.innerHTML = ""; rowRis.innerHTML = "";
-
-        gameState.squadra.forEach((p, index) => {
-            const html = `
-                <div class="player-slot" style="border-color: ${COLORS[p.level]}">
-                    <span class="card-pwr">${p.pwr}</span>
-                    <img src="${p.img}" class="card-img">
-                    <span class="card-name">${p.name}</span>
-                </div>
-            `;
-            if (index < 5) rowTit.innerHTML += html;
-            else rowRis.innerHTML += html;
-        });
+    function handleCard(role, idx) {
+        if(!isSubMode) { 
+            let p = (idx === null) ? squad[role] : squad[role][idx]; 
+            if(p) openDetails(role, idx); 
+            return; 
+        }
+        if(!selectedSub) { if(role.startsWith('res')) return; selectedSub = { role, idx }; }
+        else {
+            const isMatch = (role === "res_" + selectedSub.role) || ("res_" + role === selectedSub.role);
+            if(isMatch) {
+                let tit = squad[selectedSub.role][selectedSub.idx], ris = (idx === null) ? squad[role] : squad[role][idx];
+                squad[selectedSub.role][selectedSub.idx] = ris; 
+                if(idx === null) squad[role] = tit; else squad[role][idx] = tit;
+                save(); toggleSubMode();
+            } else { if(!role.startsWith('res')) selectedSub = { role, idx }; }
+        }
+        renderSquad();
     }
 
-    // --- LOGICA PARTITA ---
+    function toggleSubMode() { 
+        isSubMode = !isSubMode; selectedSub = null; 
+        const btn = document.getElementById('sub-mode-btn');
+        btn.innerText = isSubMode ? "ANNULLA" : "MODALITÀ SOSTITUZIONE";
+        btn.style.background = isSubMode ? "#e74c3c" : "#3498db";
+        renderSquad(); 
+    }
+
+    function openDetails(role, idx) {
+        let p = (idx === null) ? squad[role] : squad[role][idx];
+        const s = calcStats(p), cost = (p.level * 1000) + (p.upgrades * 500);
+        document.getElementById('details-modal').style.display = 'flex';
+        document.getElementById('m-role').innerText = p.role;
+        document.getElementById('m-category').innerText = CATS[p.level];
+        document.getElementById('m-category').style.color = COLORS[p.level];
+        document.getElementById('m-name').innerText = p.name;
+        document.getElementById('m-img').src = p.img;
+        document.getElementById('m-total').innerText = "POTENZA: " + s.total;
+        
+        let h = ""; const labs = p.role === "PT" ? {VEL:"VEL", PAS:"PAS", DEF:"PRE", RIF:"RIF"} : {VEL:"VEL", SHO:"TIR", PAS:"PAS", DEF:"DIF", DRI:"DRI"};
+        for(let k in labs) {
+            h += `<div class="stat-row"><span>${labs[k]}</span><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${Math.min(s[k]/10, 100)}%"></div></div><span>${s[k]}</span></div>`;
+        }
+        document.getElementById('m-stats').innerHTML = h;
+        const upg = document.getElementById('upg-btn');
+        upg.disabled = p.upgrades >= LIMITS[p.level] || taps < cost;
+        upg.innerText = p.upgrades >= LIMITS[p.level] ? "MAX" : `POTENZIA (${cost})`;
+        upg.onclick = () => { if(taps >= cost) { taps -= cost; p.upgrades++; save(); openDetails(role, idx); renderSquad(); updateUI(); } };
+    }
+
+    // --- LOGICA STADIO ---
+    function checkMatchReady() {
+        const isReady = (squad.pt.length >= 1 && squad.df.length >= 2 && squad.at.length >= 2);
+        document.getElementById('start-match-btn').disabled = !isReady;
+        document.getElementById('match-error').style.display = isReady ? 'none' : 'block';
+    }
+
     function generateOpponent() {
-        const pwr = 300 + Math.floor(Math.random() * 1000);
-        gameState.currentOpponent = {
-            name: "Team Rival "+Math.floor(Math.random()*99),
-            pwr: pwr,
-            prize: pwr * 10
-        };
-        document.getElementById('opp-name').innerText = gameState.currentOpponent.name;
+        const teams = ["Scappati di Casa FC", "Real Madrido", "AC Picchia", "Pescara Manzia", "Dopolavoro Ferroviario"];
+        const pwr = 500 + Math.floor(Math.random() * 2000);
+        currentOpponent = { name: teams[Math.floor(Math.random()*teams.length)], pwr: pwr, prize: pwr * 5 };
+        document.getElementById('opp-name').innerText = currentOpponent.name;
         document.getElementById('opp-pwr').innerText = "Potenza: " + pwr;
-        document.getElementById('opp-prize').innerText = (pwr * 10).toLocaleString();
+        document.getElementById('opp-prize').innerText = currentOpponent.prize.toLocaleString();
     }
 
     function startMatch() {
-        if (gameState.squadra.length < 5) {
-            alert("Ti servono almeno 5 giocatori!");
-            return;
-        }
-
-        const modal = document.getElementById('match-modal');
-        const log = document.getElementById('match-log');
-        modal.style.display = 'flex';
-        log.innerHTML = "Inizio partita...<br>";
-        
-        let myPwr = gameState.squadra.slice(0,5).reduce((a,b) => a + b.pwr, 0);
-        let scoreH = 0; let scoreA = 0;
-        let turn = 0;
-
-        const interval = setInterval(() => {
-            turn++;
-            if (Math.random() < (myPwr / (myPwr + gameState.currentOpponent.pwr))) {
-                scoreH++;
-                log.innerHTML += "GOAL PER TE!<br>";
-            } else {
-                scoreA++;
-                log.innerHTML += "GOL AVVERSARIO!<br>";
-            }
-            document.getElementById('match-score').innerText = `${scoreH} - ${scoreA}`;
+        document.getElementById('match-modal').style.display = 'flex';
+        let log = document.getElementById('match-log'); let hS=0, aS=0, turn=0;
+        let myPwr = [...squad.pt, ...squad.df, ...squad.at].reduce((sum, p) => sum + calcStats(p).total, 0);
+        log.innerHTML = "FISCHIO D'INIZIO!<br>";
+        const msgs = ["Azione a centrocampo...", "Tiro potente!", "Parata!", "Contropiede!", "Fallo!"];
+        let matchInt = setInterval(() => {
+            turn++; let msg = msgs[Math.floor(Math.random()*msgs.length)];
+            let prob = myPwr / (myPwr + currentOpponent.pwr);
+            if(Math.random() < 0.25) {
+                if(Math.random() < prob) { hS++; log.innerHTML += `<span style="color:var(--gold)">GOAL!</span> ${msg}<br>`; }
+                else { aS++; log.innerHTML += `<span style="color:#ff4444">GOL AVV!</span> ${msg}<br>`; }
+                document.getElementById('score-board').innerText = `${hS} - ${aS}`;
+            } else { log.innerHTML += msg + "<br>"; }
             log.scrollTop = log.scrollHeight;
-
-            if (turn >= 5) {
-                clearInterval(interval);
-                if (scoreH > scoreA) {
-                    log.innerHTML += `<br><span style="color:yellow">VITTORIA! +${gameState.currentOpponent.prize} Tap</span>`;
-                    gameState.taps += gameState.currentOpponent.prize;
-                } else {
-                    log.innerHTML += "<br>SCONFITTA...";
-                }
-                document.getElementById('close-match').style.display = 'block';
-                save();
-                updateUI();
-                generateOpponent();
+            if(turn >= 10) {
+                clearInterval(matchInt); log.innerHTML += "<b>FINE PARTITA!</b><br>";
+                if(hS > aS) { log.innerHTML += `<h2 style="color:var(--gold)">VITTORIA! +${currentOpponent.prize} Tap</h2>`; taps += currentOpponent.prize; }
+                else if(hS < aS) { log.innerHTML += `<h2 style="color:#ff4444">SCONFITTA...</h2>`; }
+                else { log.innerHTML += `<h2>PAREGGIO!</h2>`; taps += Math.floor(currentOpponent.prize/4); }
+                updateUI(); save(); generateOpponent(); document.getElementById('close-match').style.display = 'block';
             }
-        }, 800);
+        }, 600);
     }
 
-    function closeMatch() {
-        document.getElementById('match-modal').style.display = 'none';
-        document.getElementById('close-match').style.display = 'none';
-    }
-
-    function resetData() {
-        if(confirm("Vuoi resettare tutto?")) {
-            localStorage.clear();
-            location.reload();
-        }
-    }
-
-    window.onload = init;
-</script>
-</body>
-</html>
+    function closeDetails() { document.getElementById('details-modal').style.display='none'; }
+    function closeMatch() { document.getElementById('match-modal').style.display='none'; document.getElementById('close-match').style.display='none'; document.getElementById('score-board'
