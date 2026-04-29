@@ -3,155 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Soccer Stars - Final Fix</title>
+    <title>Soccer Stars - FIXED</title>
     <style>
-        :root { --gold: #ffd700; --green: #1a472a; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        body { 
-            margin: 0; background: #000; color: white; 
-            font-family: sans-serif; height: 100vh; 
-            display: flex; flex-direction: column; overflow: hidden;
-        }
+        /* RESET TOTALE */
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { font-family: sans-serif; background: #000; color: #fff; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-        /* Navigazione */
-        #navbar { 
-            height: 70px; background: #111; border-top: 2px solid var(--gold);
-            display: flex; justify-content: space-around; align-items: center;
-            position: fixed; bottom: 0; width: 100%; z-index: 1000;
+        /* HEADER FISSO */
+        #header { 
+            height: 60px; background: #111; border-bottom: 2px solid gold; 
+            display: flex; justify-content: space-between; align-items: center; padding: 0 15px; flex-shrink: 0; 
         }
-        .nav-btn { color: #666; font-size: 12px; font-weight: bold; cursor: pointer; text-align: center; }
-        .nav-btn.active { color: var(--gold); }
+        .gold-txt { color: gold; font-weight: bold; font-size: 20px; }
 
-        /* Contenitore Schermate */
-        .screen { 
-            display: none; flex: 1; width: 100%; height: 100%; 
-            padding: 20px; padding-bottom: 90px; overflow-y: auto; 
-        }
-        #screen-campo { display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #2e7d32 0%, #1a472a 100%); }
+        /* AREA CONTENUTO */
+        #content { flex-grow: 1; position: relative; overflow: hidden; }
+        .screen { display: none; width: 100%; height: 100%; padding: 20px; overflow-y: auto; }
 
-        /* Palla */
-        #ball { width: 150px; height: 150px; cursor: pointer; z-index: 100; transition: transform 0.1s; }
+        /* CAMPO - TAP FUNZIONANTE */
+        #screen-campo { display: flex; flex-direction: column; align-items: center; justify-content: center; background: green; }
+        #ball { width: 180px; height: 180px; cursor: pointer; transition: transform 0.1s; }
         #ball:active { transform: scale(0.9); }
 
-        /* Header */
-        #header { 
-            background: #111; padding: 10px; border-bottom: 2px solid var(--gold);
-            display: flex; justify-content: space-between; align-items: center;
+        /* NAVIGAZIONE - BOTTONI GRANDI */
+        #nav { 
+            height: 80px; background: #111; border-top: 2px solid gold; 
+            display: flex; justify-content: space-around; align-items: center; flex-shrink: 0;
         }
-        .tap-val { color: var(--gold); font-size: 20px; font-weight: bold; }
+        .nav-btn { 
+            padding: 10px; color: #888; font-weight: bold; border: 1px solid #333; border-radius: 5px; 
+            min-width: 80px; text-align: center; background: #222;
+        }
+        .nav-btn.active { color: #000; background: gold; }
 
-        /* Elementi Stadio */
-        .match-box { background: #222; border: 2px solid var(--gold); padding: 20px; border-radius: 15px; text-align: center; }
-        .btn-game { background: var(--gold); border: none; padding: 15px; width: 100%; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; }
-        #log { background: #000; color: #0f0; height: 100px; overflow-y: auto; font-family: monospace; font-size: 10px; margin-top: 10px; padding: 5px; text-align: left; }
+        /* MODALI E STADIO */
+        .card { background: #222; padding: 15px; border-radius: 10px; border: 1px solid gold; margin-top: 10px; text-align: center; }
+        .btn-action { background: gold; color: #000; border: none; padding: 10px; width: 100%; font-weight: bold; margin-top: 10px; border-radius: 5px; }
     </style>
 </head>
 <body>
 
 <div id="header">
-    <div>TAP: <span id="tap-display" class="tap-val">0</span></div>
-    <button onclick="resetGame()" style="font-size:10px; background:#444; color:#fff; border:none; padding:5px;">RESET</button>
+    <div>TAP: <span id="val-taps" class="gold-txt">0</span></div>
+    <button onclick="clearAll()" style="background:red; color:white; border:none; padding:5px; font-size:10px;">RESET TOTALE</button>
 </div>
 
-<div id="screen-campo" class="screen" style="display: flex;">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/d/d3/Soccerball.svg" id="ball" onclick="handleTap()">
-</div>
+<div id="content">
+    <div id="scr-campo" class="screen" style="display: flex;">
+        <h3 style="margin-bottom: 20px;">TOCCA LA PALLA</h3>
+        <img src="https://upload.wikimedia.org/wikipedia/commons/d/d3/Soccerball.svg" id="ball">
+    </div>
 
-<div id="screen-squadra" class="screen">
-    <h2 style="color:var(--gold)">Squadra</h2>
-    <div id="player-list">Compra giocatori per giocare nello stadio!</div>
-    <button class="btn-game" onclick="buyPlayer()">Compra Giocatore (500 Tap)</button>
-</div>
+    <div id="scr-squadra" class="screen">
+        <h2>LA TUA SQUADRA</h2>
+        <div id="squad-list" class="card">Nessun giocatore</div>
+        <button class="btn-action" onclick="buy()">COMPRA GIOCATORE (1000 TAP)</button>
+    </div>
 
-<div id="screen-stadio" class="screen">
-    <h2 style="color:var(--gold)">Stadio</h2>
-    <div class="match-box">
-        <h3 id="opp-name">Real Madrid</h3>
-        <p id="opp-pwr">Potenza: 1500</p>
-        <button id="play-btn" class="btn-game" onclick="simulaPartita()">GIOCA PARTITA</button>
-        <div id="log">In attesa...</div>
+    <div id="scr-stadio" class="screen">
+        <h2>STADIO</h2>
+        <div class="card">
+            <p>AVVERSARIO: Team Alpha</p>
+            <button class="btn-action" onclick="playMatch()">GIOCA (Vinci 5000)</button>
+        </div>
+        <div id="log" style="margin-top:10px; font-size:12px; color:lime;"></div>
     </div>
 </div>
 
-<div id="navbar">
-    <div class="nav-btn active" id="btn-campo" onclick="changeScreen('campo')">CAMPO</div>
-    <div class="nav-btn" id="btn-squadra" onclick="changeScreen('squadra')">SQUADRA</div>
-    <div class="nav-btn" id="btn-stadio" onclick="changeScreen('stadio')">STADIO</div>
+<div id="nav">
+    <div class="nav-btn active" id="btn-campo" onclick="move('campo')">CAMPO</div>
+    <div class="nav-btn" id="btn-squadra" onclick="move('squadra')">SQUADRA</div>
+    <div class="nav-btn" id="btn-stadio" onclick="move('stadio')">STADIO</div>
 </div>
 
 <script>
-    let data = {
-        taps: 2000000,
-        players: 0
-    };
+    // Forza 2 milioni se non esiste il nuovo salvataggio
+    let taps = localStorage.getItem('new_soccer_v1') ? parseInt(localStorage.getItem('new_soccer_v1')) : 2000000;
+    let players = parseInt(localStorage.getItem('new_players_v1')) || 0;
 
-    // Carica salvataggio
-    if(localStorage.getItem('soccer_save')) {
-        data = JSON.parse(localStorage.getItem('soccer_save'));
+    function refresh() {
+        document.getElementById('val-taps').innerText = taps.toLocaleString();
+        document.getElementById('squad-list').innerText = "Giocatori in rosa: " + players;
+        localStorage.setItem('new_soccer_v1', taps);
+        localStorage.setItem('new_players_v1', players);
     }
 
-    function updateUI() {
-        document.getElementById('tap-display').innerText = data.taps.toLocaleString();
-        localStorage.setItem('soccer_save', JSON.stringify(data));
-    }
+    // GESTIONE TAP (Direttamente sull'ID per evitare bug)
+    document.getElementById('ball').addEventListener('click', function() {
+        taps += 1;
+        refresh();
+    });
 
-    function handleTap() {
-        data.taps += 1;
-        updateUI();
-    }
-
-    function changeScreen(id) {
-        // Nascondi tutto
+    // NAVIGAZIONE
+    function move(id) {
+        // Nasconde tutti
         document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
 
-        // Mostra solo quella scelta
-        const target = document.getElementById('screen-' + id);
-        if(id === 'campo') target.style.display = 'flex';
-        else target.style.display = 'block';
-
+        // Mostra
+        const target = document.getElementById('scr-' + id);
+        target.style.display = (id === 'campo') ? 'flex' : 'block';
         document.getElementById('btn-' + id).classList.add('active');
     }
 
-    function buyPlayer() {
-        if(data.taps >= 500) {
-            data.taps -= 500;
-            data.players += 1;
-            document.getElementById('player-list').innerText = "Hai " + data.players + " giocatori.";
-            updateUI();
-        } else {
-            alert("Tap insufficienti!");
-        }
+    function buy() {
+        if(taps >= 1000) {
+            taps -= 1000;
+            players++;
+            refresh();
+        } else { alert("Pochi Tap!"); }
     }
 
-    function simulaPartita() {
-        if(data.players < 1) {
-            alert("Ti serve almeno un giocatore!");
-            return;
-        }
+    function playMatch() {
+        if(players < 1) { alert("Compra un giocatore!"); return; }
         const log = document.getElementById('log');
-        log.innerHTML = "Inizio partita...<br>";
+        log.innerText = "Giocando...";
         setTimeout(() => {
-            const win = Math.random() > 0.5;
-            if(win) {
-                data.taps += 5000;
-                log.innerHTML += "<span style='color:yellow'>VITTORIA! +5000 Tap</span>";
-            } else {
-                log.innerHTML += "<span style='color:red'>SCONFITTA...</span>";
-            }
-            updateUI();
-        }, 1000);
+            taps += 5000;
+            log.innerText = "VITTORIA! +5000 Tap";
+            refresh();
+        }, 800);
     }
 
-    function resetGame() {
-        if(confirm("Vuoi resettare?")) {
-            localStorage.clear();
-            location.reload();
-        }
+    function clearAll() {
+        localStorage.clear();
+        location.reload();
     }
 
-    updateUI();
+    // Partenza
+    refresh();
 </script>
 </body>
 </html>
