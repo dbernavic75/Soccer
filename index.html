@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Soccer Stars - Pro Manager</title>
+    <title>Soccer Stars - Elite Manager</title>
     <style>
         :root {
             --gold: #ffd700;
@@ -96,7 +96,7 @@
 <div id="pack-overlay">
     <div id="anim-card" class="anim-card">?</div>
     <h2 id="pack-res" style="margin-top:15px; text-align:center; height: 20px;"></h2>
-    <div id="pack-cat" style="height: 20px;"></div>
+    <div id="pack-cat" style="height: 20px; font-size: 12px; text-align: center;"></div>
     <button class="btn-ui" id="close-pack" onclick="finishPack()" style="display:none; background:var(--gold); width: auto; padding: 10px 40px;">OK</button>
 </div>
 
@@ -119,6 +119,18 @@
 </div>
 
 <script>
+    // --- GENERATORE NOMI ---
+    function genName(level) {
+        const pre = ["Berto", "Ugo", "Ciro", "Lino", "Pino", "Gino", "Vito", "Mimo", "Tano", "Beppe", "Nico", "Rino", "Sandro", "Dino", "Miky"];
+        const suf = ["Scivolone", "Pedalino", "Frenato", "Rincorsa", "Zoppetto", "Tirolo", "Palo", "Traversa", "Rinvio", "Cross", "Tunnel", "Gancio"];
+        if (level >= 4) {
+            const starPre = ["Lio", "Cris", "Zlatan", "Kylian", "Erling", "Ney", "Karim", "Luka", "Mo", "Jude"];
+            const starSuf = ["Pulce", "Ronalda", "Ibra", "Mbappè", "Aland", "O'Ney", "Benzemulo", "Modriccia", "Salata", "Bellinguam"];
+            return starPre[Math.floor(Math.random()*starPre.length)] + " " + starSuf[Math.floor(Math.random()*starSuf.length)];
+        }
+        return pre[Math.floor(Math.random()*pre.length)] + " " + suf[Math.floor(Math.random()*suf.length)];
+    }
+
     // --- DATABASE ---
     const DB_MASTER = {
         5: [
@@ -130,10 +142,7 @@
             {n:"Thibaut Cortese", r:"PT"}, {n:"Alisson Beckerre", r:"PT"}, {n:"Ederson Volante", r:"PT"}, {n:"Jan Oblacco", r:"PT"}, {n:"Mike Magman", r:"PT"}, {n:"Marc Ter Stecca", r:"PT"},
             {n:"Ruben Diaspro", r:"DF"}, {n:"Achraf Volante", r:"DF"}, {n:"Theo Ernannde", r:"DF"}, {n:"Eder Militaoia", r:"DF"}, {n:"Marquinhosinho", r:"DF"}, {n:"Alphonso Runner", r:"DF"}, {n:"Kyle Walk-man", r:"DF"}, {n:"Jules Crudo", r:"DF"}, {n:"Bastoni Di Legno", r:"DF"}, {n:"Gleison Bremmerre", r:"DF"}, {n:"Ronald Arauj-oh", r:"DF"}, {n:"David Alaba-bar", r:"DF"},
             {n:"Kevin De Bruyne-a", r:"AT"}, {n:"Mo Salata", r:"AT"}, {n:"Vini Juniorre", r:"AT"}, {n:"Harry Cannone", r:"AT"}, {n:"Lautaro Toro", r:"AT"}, {n:"Robert Lewandovino", r:"AT"}, {n:"Jude Bellinguam", r:"AT"}, {n:"Bukayo Sakata", r:"AT"}, {n:"Phil Fodenne", r:"AT"}, {n:"Rafael Leaoia", r:"AT"}, {n:"Rodri Metronomo", r:"AT"}, {n:"Victor Osimhenne", r:"AT"}
-        ],
-        3: Array.from({length:50}, (_, i) => ({ n: "Fuoriclasse " + (i+1), r: i < 10 ? "PT" : (i < 30 ? "DF" : "AT") })),
-        2: Array.from({length:90}, (_, i) => ({ n: "Promessa " + (i+1), r: i < 18 ? "PT" : (i < 54 ? "DF" : "AT") })),
-        1: Array.from({length:150}, (_, i) => ({ n: "Esordiente " + (i+1), r: i < 30 ? "PT" : (i < 90 ? "DF" : "AT") }))
+        ]
     };
 
     const COLORS = ["", "#95a5a6", "#2ecc71", "#3498db", "#9b59b6", "#f1c40f"];
@@ -143,17 +152,16 @@
     const VALS = [0, 2, 4, 8, 15, 30];
 
     // --- STATO ---
-    let taps = localStorage.getItem('taps_final') ? parseInt(localStorage.getItem('taps_final')) : 2000000;
-    let squad = JSON.parse(localStorage.getItem('squad_final')) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
+    let taps = localStorage.getItem('taps_v25') ? parseInt(localStorage.getItem('taps_v25')) : 2000000;
+    let squad = JSON.parse(localStorage.getItem('squad_v25')) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
     let isSubMode = false;
     let selectedSub = null;
 
     function save() {
-        localStorage.setItem('taps_final', taps);
-        localStorage.setItem('squad_final', JSON.stringify(squad));
+        localStorage.setItem('taps_v25', taps);
+        localStorage.setItem('squad_v25', JSON.stringify(squad));
     }
 
-    // --- LOGICA ---
     function doTap() { taps++; updateUI(); save(); }
     function updateUI() { document.getElementById('tap-count').innerText = taps.toLocaleString(); }
     function getRoleName(r) { return r === "PT" ? "Portiere" : (r === "DF" ? "Difensore" : "Attaccante"); }
@@ -170,9 +178,13 @@
         return { ...s, total: t };
     }
 
+    function isDuplicate(name) {
+        const all = [...squad.pt, ...squad.df, ...squad.at, squad.res_pt, squad.res_df, squad.res_at];
+        return all.some(p => p && p.name === name);
+    }
+
     function renderSquad() {
         const isFull = (squad.pt.length >= 1 && squad.df.length >= 2 && squad.at.length >= 2 && squad.res_pt && squad.res_df && squad.res_at);
-        
         const draw = (p, roleKey, idx, defaultRole) => {
             let stateClass = "";
             if(isSubMode) {
@@ -188,12 +200,10 @@
                 <div class="card-info"><span class="card-role-tag">${getRoleName(p.role)}</span><span class="card-pwr">${s.total}</span><span class="card-name">${p.name}</span></div>
             </div>`;
         };
-
         document.getElementById('row-pt').innerHTML = draw(squad.pt[0], 'pt', 0, 'PT');
         document.getElementById('row-df').innerHTML = draw(squad.df[0], 'df', 0, 'DF') + draw(squad.df[1], 'df', 1, 'DF');
         document.getElementById('row-at').innerHTML = draw(squad.at[0], 'at', 0, 'AT') + draw(squad.at[1], 'at', 1, 'AT');
         document.getElementById('row-res').innerHTML = draw(squad.res_pt, 'res_pt', null, 'PT') + draw(squad.res_df, 'res_df', null, 'DF') + draw(squad.res_at, 'res_at', null, 'AT');
-        
         document.getElementById('shop-area').innerHTML = `<button class="btn-ui" onclick="buyPack()" style="background:var(--gold); margin-bottom:10px;" ${taps<300||isFull?'disabled':''}>${isFull?'SQUADRA COMPLETA':'PACCHETTO (300 TAP)'}</button>`;
         document.getElementById('sub-mode-btn').style.display = isFull ? "block" : "none";
     }
@@ -218,32 +228,63 @@
     function buyPack() {
         if(taps < 300) return;
         taps -= 300; save(); updateUI();
+        
         const ov = document.getElementById('pack-overlay');
         const anim = document.getElementById('anim-card');
+        const resText = document.getElementById('pack-res');
+        const catText = document.getElementById('pack-cat');
+        const okBtn = document.getElementById('close-pack');
+
+        // RESET ANIMAZIONE
         ov.style.display = 'flex';
+        anim.innerHTML = "?";
+        anim.style.borderColor = "white";
         anim.classList.add('spinning');
+        resText.innerText = "";
+        catText.innerText = "ESTRAZIONE...";
+        okBtn.style.display = "none";
+
         setTimeout(() => {
             anim.classList.remove('spinning');
             const r = Math.random();
             let lv = r<0.02?5 : r<0.08?4 : r<0.2?3 : r<0.5?2 : 1;
+            
+            // RUOLI MANCANTI
             let rolesNeeded = [];
             if(squad.pt.length < 1 || !squad.res_pt) rolesNeeded.push("PT");
             if(squad.df.length < 2 || !squad.res_df) rolesNeeded.push("DF");
             if(squad.at.length < 2 || !squad.res_at) rolesNeeded.push("AT");
-            
+
+            if(rolesNeeded.length === 0) {
+                anim.innerHTML = "🚫"; resText.innerText = "SQUADRA PIENA";
+                okBtn.style.display = "block"; return;
+            }
+
             let finalRole = rolesNeeded[Math.floor(Math.random()*rolesNeeded.length)];
-            let candidates = DB_MASTER[lv].filter(c => c.r === finalRole);
-            let chosen = candidates[Math.floor(Math.random()*candidates.length)];
-            
+            let chosen;
+            if (lv >= 4) {
+                let candidates = DB_MASTER[lv].filter(c => c.r === finalRole);
+                if (candidates.length === 0) candidates = DB_MASTER[lv]; // fallback se mancano ruoli specifici liv 5
+                chosen = candidates[Math.floor(Math.random()*candidates.length)];
+            } else {
+                chosen = { n: genName(lv), r: finalRole };
+            }
+
+            // CONTROLLO DUPLICATI
+            if (isDuplicate(chosen.n)) {
+                buyPack(); return; // Riprova automaticamente
+            }
+
             const p = { name: chosen.n, level: lv, upgrades: 0, role: chosen.r, bias: Math.floor(Math.random()*10), img: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(chosen.n)}` };
             const k = chosen.r.toLowerCase();
             if(squad[k].length < (k==='pt'?1:2)) squad[k].push(p); else squad['res_'+k] = p;
             
             anim.innerHTML = `<img src="${p.img}" width="100%">`;
-            document.getElementById('pack-res').innerText = chosen.n;
-            document.getElementById('pack-cat').innerText = CATS[lv];
-            document.getElementById('pack-cat').style.color = COLORS[lv];
-            document.getElementById('close-pack').style.display = "block";
+            anim.style.borderColor = COLORS[lv];
+            resText.innerText = chosen.n;
+            catText.innerText = CATS[lv];
+            catText.style.color = COLORS[lv];
+            okBtn.style.display = "block";
             save(); renderSquad();
         }, 1200);
     }
@@ -259,26 +300,15 @@
         document.getElementById('m-category').innerText = CATS[p.level];
         document.getElementById('m-category').style.color = COLORS[p.level];
         document.getElementById('m-total').innerText = "POWER: " + s.total;
-        
         let h = "";
         const labels = p.role === "PT" ? {VEL:"VEL", PAS:"PAS", DEF:"PRE", RIF:"RIF"} : {VEL:"VEL", SHO:"TIR", PAS:"PAS", DEF:"DIF", DRI:"DRI"};
         for(let k in labels) h += `<div class="stat-row"><span>${labels[k]}</span><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${s[k]/10}%"></div></div><span>${s[k]}</span></div>`;
         document.getElementById('stats-container').innerHTML = h;
-        
         const btn = document.getElementById('upg-action-btn');
         btn.disabled = p.upgrades >= LIMITS[p.level] || taps < cost;
         btn.innerText = p.upgrades >= LIMITS[p.level] ? "MAX" : "POTENZIA (" + cost + ")";
-        btn.onclick = () => { taps -= cost; p.upgrades++; save(); openDetails(role, idx); renderSquad(); updateUI(); };
+        btn.onclick = () => { if(taps >= cost) { taps -= cost; p.upgrades++; save(); openDetails(role, idx); renderSquad(); updateUI(); } };
     }
 
     function toggleSubMode() { isSubMode = !isSubMode; selectedSub = null; renderSquad(); document.getElementById('sub-mode-btn').innerText = isSubMode ? "ANNULLA" : "MODALITÀ SOSTITUZIONE"; }
-    function showGame() { document.getElementById('squad-screen').style.display = 'none'; document.getElementById('nav-campo').classList.add('active'); document.getElementById('nav-squadra').classList.remove('active'); }
-    function toggleSquad() { document.getElementById('squad-screen').style.display = 'block'; document.getElementById('nav-squadra').classList.add('active'); document.getElementById('nav-campo').classList.remove('active'); renderSquad(); }
-    function finishPack() { document.getElementById('pack-overlay').style.display='none'; document.getElementById('close-pack').style.display='none'; }
-    function closeDetails() { document.getElementById('details-modal').style.display='none'; }
-    function resetGame() { if(confirm("RESET?")) { localStorage.clear(); location.reload(); } }
-
-    window.onload = () => { updateUI(); renderSquad(); };
-</script>
-</body>
-</html>
+    function showGame() { document.getElementById('squad-screen').style.display = 'none'; document.getElementById
