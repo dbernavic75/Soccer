@@ -3,292 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Soccer Stars - Elite Manager</title>
+    <title>Soccer Stars - Final Fix</title>
     <style>
-        :root {
-            --gold: #ffd700;
-            --rarity-1: #95a5a6; --rarity-2: #2ecc71; --rarity-3: #3498db; --rarity-4: #9b59b6; --rarity-5: #f1c40f;
-        }
+        :root { --gold: #ffd700; --green: #1a472a; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background: #1a472a; color: white; font-family: 'Arial Black', sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* HEADER */
-        #header { padding: 8px; background: #000; border-bottom: 2px solid var(--gold); display: flex; justify-content: space-between; align-items: center; z-index: 100; }
-        .header-stat { text-align: center; flex: 1; }
-        .stat-val { font-size: 18px; color: var(--gold); display: block; }
-        .stat-lab { font-size: 8px; text-transform: uppercase; color: #aaa; }
-        #reset-btn { background: #ff4444; border: none; color: white; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer; }
+        body { 
+            margin: 0; background: #000; color: white; 
+            font-family: sans-serif; height: 100vh; 
+            display: flex; flex-direction: column; overflow: hidden;
+        }
 
-        /* SCHERMATE */
-        .screen { display: none; flex: 1; width: 100%; height: 100%; overflow-y: auto; padding: 10px; padding-bottom: 80px; box-sizing: border-box; }
+        /* Navigazione */
+        #navbar { 
+            height: 70px; background: #111; border-top: 2px solid var(--gold);
+            display: flex; justify-content: space-around; align-items: center;
+            position: fixed; bottom: 0; width: 100%; z-index: 1000;
+        }
+        .nav-btn { color: #666; font-size: 12px; font-weight: bold; cursor: pointer; text-align: center; }
+        .nav-btn.active { color: var(--gold); }
+
+        /* Contenitore Schermate */
+        .screen { 
+            display: none; flex: 1; width: 100%; height: 100%; 
+            padding: 20px; padding-bottom: 90px; overflow-y: auto; 
+        }
         #screen-campo { display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #2e7d32 0%, #1a472a 100%); }
-        #screen-squadra { background: #0f2b1a; }
-        #screen-stadio { background: #0a1f13; text-align: center; }
 
-        #ball { width: 120px; cursor: pointer; transition: 0.1s; }
-        #ball:active { transform: scale(0.8); }
+        /* Palla */
+        #ball { width: 150px; height: 150px; cursor: pointer; z-index: 100; transition: transform 0.1s; }
+        #ball:active { transform: scale(0.9); }
 
-        /* SQUADRA & CARTE */
-        .section-title { text-align: center; color: var(--gold); font-size: 10px; margin: 10px 0 5px 0; border-bottom: 1px solid rgba(255,215,0,0.3); }
-        .row { display: flex; justify-content: center; gap: 5px; margin-bottom: 5px; min-height: 120px; }
-        .player-slot { width: 80px; height: 120px; border-radius: 6px; position: relative; background: #222; border: 2px solid #333; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; }
-        .card-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0.6; z-index: 1; }
-        .card-overlay { position: absolute; bottom: 0; left: 0; width: 100%; height: 60%; background: linear-gradient(to top, black 20%, transparent 100%); z-index: 2; }
-        .card-header { position: absolute; top: 2px; width: 100%; display: flex; justify-content: space-between; padding: 0 4px; z-index: 3; box-sizing: border-box; }
-        .tag-lvl { background: rgba(0,0,0,0.8); color: white; padding: 1px 3px; border-radius: 2px; font-size: 7px; }
-        .tag-upg { background: var(--gold); color: black; padding: 1px 3px; border-radius: 2px; font-size: 7px; font-weight: bold; }
-        .card-info { position: absolute; bottom: 4px; width: 100%; text-align: center; z-index: 3; }
-        .card-pwr { font-size: 14px; color: var(--gold); display: block; }
-        .card-name { font-size: 6px; text-transform: uppercase; color: #fff; white-space: nowrap; }
+        /* Header */
+        #header { 
+            background: #111; padding: 10px; border-bottom: 2px solid var(--gold);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .tap-val { color: var(--gold); font-size: 20px; font-weight: bold; }
 
-        /* STADIO UI */
-        .opponent-card { background: rgba(0,0,0,0.5); border: 2px solid var(--gold); border-radius: 15px; padding: 20px; margin-top: 20px; }
-        #match-log { background: #111; width: 100%; height: 150px; overflow-y: auto; border: 1px solid #333; padding: 10px; font-family: monospace; color: #0f0; margin: 15px 0; border-radius: 8px; font-size: 11px; text-align: left; }
-        .score-board { font-size: 40px; display: flex; gap: 20px; align-items: center; margin-bottom: 10px; }
-
-        /* MODALI & OVERLAYS */
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; flex-direction: column; padding: 20px; box-sizing: border-box; }
-        .modal-content { background: #fff; color: #000; border-radius: 15px; padding: 20px; width: 100%; max-width: 300px; position: relative; }
-        .stat-row { display: flex; align-items: center; gap: 5px; margin: 4px 0; font-size: 10px; }
-        .stat-bar-bg { flex: 1; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
-        .stat-bar-fill { height: 100%; background: #1a472a; }
-
-        .btn-ui { border: none; font-weight: bold; border-radius: 8px; padding: 12px; cursor: pointer; width: 100%; margin-top: 10px; font-family: 'Arial Black', sans-serif; text-transform: uppercase; }
-        .btn-ui:disabled { background: #444 !important; color: #888; cursor: not-allowed; }
-
-        #navbar { display: flex; background: #000; padding: 10px 0; border-top: 2px solid var(--gold); position: fixed; bottom: 0; width: 100%; z-index: 500; }
-        .nav-item { flex: 1; text-align: center; font-size: 11px; color: #666; cursor: pointer; font-weight: bold; }
-        .nav-item.active { color: var(--gold); }
-
-        /* ANIMAZIONI */
-        .spinning { animation: spin 0.2s infinite linear; }
-        @keyframes spin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
-        .vibrating { animation: vibrate 0.2s infinite; border: 2px solid white !important; }
-        .target-sub { animation: vibrate 0.1s infinite; border: 2px solid var(--gold) !important; box-shadow: 0 0 15px var(--gold); }
-        @keyframes vibrate { 0% { transform: translate(0); } 25% { transform: translate(1px, 1px) rotate(0.5deg); } 50% { transform: translate(-1px, -1px) rotate(-0.5deg); } 100% { transform: translate(0); } }
+        /* Elementi Stadio */
+        .match-box { background: #222; border: 2px solid var(--gold); padding: 20px; border-radius: 15px; text-align: center; }
+        .btn-game { background: var(--gold); border: none; padding: 15px; width: 100%; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+        #log { background: #000; color: #0f0; height: 100px; overflow-y: auto; font-family: monospace; font-size: 10px; margin-top: 10px; padding: 5px; text-align: left; }
     </style>
 </head>
 <body>
 
 <div id="header">
-    <button id="reset-btn" onclick="resetGame()">RESET</button>
-    <div class="header-stat"><span class="stat-lab">I tuoi Tap</span><span id="tap-count" class="stat-val">0</span></div>
+    <div>TAP: <span id="tap-display" class="tap-val">0</span></div>
+    <button onclick="resetGame()" style="font-size:10px; background:#444; color:#fff; border:none; padding:5px;">RESET</button>
 </div>
 
 <div id="screen-campo" class="screen" style="display: flex;">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/d/d3/Soccerball.svg" id="ball" onclick="doTap()">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/d/d3/Soccerball.svg" id="ball" onclick="handleTap()">
 </div>
 
 <div id="screen-squadra" class="screen">
-    <div id="shop-area"></div>
-    <div class="section-title">TITOLARI</div>
-    <div class="row" id="row-pt"></div>
-    <div class="row" id="row-df"></div>
-    <div class="row" id="row-at"></div>
-    <div class="section-title">RISERVE</div>
-    <div class="row" id="row-res"></div>
-    <button id="sub-mode-btn" class="btn-ui" style="background: #3498db; color: white; display: none;" onclick="toggleSubMode()">MODALITÀ SOSTITUZIONE</button>
+    <h2 style="color:var(--gold)">Squadra</h2>
+    <div id="player-list">Compra giocatori per giocare nello stadio!</div>
+    <button class="btn-game" onclick="buyPlayer()">Compra Giocatore (500 Tap)</button>
 </div>
 
 <div id="screen-stadio" class="screen">
-    <h2 style="color: var(--gold);">ARENA SFIDE</h2>
-    <div class="opponent-card">
-        <p style="font-size: 10px; color: #aaa;">AVVERSARIO DISPONIBILE:</p>
-        <h1 id="opp-name">---</h1>
-        <p id="opp-power-label">Potenza: ---</p>
-        <p style="color: var(--gold); font-size: 12px;">Premio Vittoria: <span id="match-prize">0</span> Tap</p>
-        <button id="start-match-btn" class="btn-ui" style="background: var(--gold); color: black;" onclick="startMatch()">GIOCA PARTITA</button>
-        <p id="match-error" style="color: #ff4444; font-size: 10px; margin-top: 10px; display: none;">Ti servono i 5 titolari!</p>
+    <h2 style="color:var(--gold)">Stadio</h2>
+    <div class="match-box">
+        <h3 id="opp-name">Real Madrid</h3>
+        <p id="opp-pwr">Potenza: 1500</p>
+        <button id="play-btn" class="btn-game" onclick="simulaPartita()">GIOCA PARTITA</button>
+        <div id="log">In attesa...</div>
     </div>
-</div>
-
-<div id="pack-overlay" class="overlay">
-    <div id="anim-card" class="spinning" style="width:140px; height:210px; border:6px solid white; border-radius:12px; background:#222; display:flex; align-items:center; justify:center; font-size:60px;">?</div>
-    <h2 id="pack-res" style="color:white; margin-top:15px;"></h2>
-    <button class="btn-ui" id="close-pack" onclick="finishPack()" style="display:none; background:var(--gold); width: auto; padding: 10px 40px;">OK</button>
-</div>
-
-<div id="details-modal" class="overlay">
-    <div class="modal-content">
-        <button onclick="closeDetails()" style="position:absolute; right:10px; top:10px; background:none; border:none; font-size:24px; cursor:pointer;">×</button>
-        <div id="m-role" style="font-size:9px; color:#666; text-align:center; text-transform: uppercase;"></div>
-        <div id="m-category" style="font-size:10px; text-align:center; font-weight:bold;"></div>
-        <img id="m-img" src="" style="width:80px; margin:10px auto; display:block;">
-        <h2 id="m-name" style="text-align:center; margin:5px 0;"></h2>
-        <div id="stats-container"></div>
-        <div id="m-total" style="text-align:center; font-size:20px; margin:10px 0; font-weight:bold;"></div>
-        <button id="upg-action-btn" class="btn-ui" style="background:#1a472a; color:white;"></button>
-    </div>
-</div>
-
-<div id="match-overlay" class="overlay">
-    <div class="score-board">
-        <div style="text-align:center"><small>TU</small><br><span id="score-home">0</span></div>
-        <div>-</div>
-        <div style="text-align:center"><small>AVV</small><br><span id="score-away">0</span></div>
-    </div>
-    <div id="match-log"></div>
-    <button id="close-match-btn" class="btn-ui" style="display:none; background:white; color:black;" onclick="closeMatch()">CHIUDI</button>
 </div>
 
 <div id="navbar">
-    <div class="nav-item active" id="nav-campo" onclick="nav('campo')">CAMPO</div>
-    <div class="nav-item" id="nav-squadra" onclick="nav('squadra')">SQUADRA</div>
-    <div class="nav-item" id="nav-stadio" onclick="nav('stadio')">STADIO</div>
+    <div class="nav-btn active" id="btn-campo" onclick="changeScreen('campo')">CAMPO</div>
+    <div class="nav-btn" id="btn-squadra" onclick="changeScreen('squadra')">SQUADRA</div>
+    <div class="nav-btn" id="btn-stadio" onclick="changeScreen('stadio')">STADIO</div>
 </div>
 
 <script>
-    const DB_REAL = {
-        5: ["Lio Pulce Messi", "Cristiano Ronalda", "Marco Van Bastone", "Lothar Mattonaus", "George Bestia"],
-        4: ["Kylian Mbappappé", "Erling Aland", "Luka Modriccia", "Karim Benzemulo", "Neymar Jrre"],
-        3: ["Ciro Immobile fermo", "Gigio Paperumma", "Theo Ernannde", "Dusan Vlahoviccia", "Nicolò Barellino"]
+    let data = {
+        taps: 2000000,
+        players: 0
     };
 
-    function genNames(c) {
-        const n=["Berto","Ugo","Ciro","Lino","Pino","Gino","Vito","Mimo","Tano","Beppe"], s=["Scivolone","Pedalino","Frenato","Rincorsa","Zoppetto","Tirolo","Palo","Traversa"];
-        let l=[]; for(let i=0;i<c;i++) l.push(n[Math.floor(Math.random()*n.length)]+" "+s[Math.floor(Math.random()*s.length)]); return l;
+    // Carica salvataggio
+    if(localStorage.getItem('soccer_save')) {
+        data = JSON.parse(localStorage.getItem('soccer_save'));
     }
 
-    const POOL = { 5:DB_REAL[5], 4:DB_REAL[4], 3:DB_REAL[3], 2:genNames(40), 1:genNames(50) };
-    const COLORS = ["","#95a5a6","#2ecc71","#3498db","#9b59b6","#f1c40f"], CATS = ["","ESORDIENTE","PROMESSA","FUORICLASSE","CAMPIONE","PALLONE D'ORO"];
-    const LIMITS = [0,30,25,20,15,10], BASE = [0,40,60,90,150,250], VALS = [0,2,4,8,15,30];
-
-    let taps = localStorage.getItem('taps_v17') ? parseInt(localStorage.getItem('taps_v17')) : 2000000;
-    let squad = JSON.parse(localStorage.getItem('squad_v17')) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
-    let isSubMode = false, selectedSub = null, currentOpponent = null;
-
-    function save() {
-        localStorage.setItem('taps_v17', taps);
-        localStorage.setItem('squad_v17', JSON.stringify(squad));
+    function updateUI() {
+        document.getElementById('tap-display').innerText = data.taps.toLocaleString();
+        localStorage.setItem('soccer_save', JSON.stringify(data));
     }
 
-    function doTap() { taps++; updateUI(); save(); }
-    function updateUI() { document.getElementById('tap-count').innerText = taps.toLocaleString('it-IT'); }
+    function handleTap() {
+        data.taps += 1;
+        updateUI();
+    }
 
-    // NAVIGAZIONE
-    function nav(target) {
+    function changeScreen(id) {
+        // Nascondi tutto
         document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        document.getElementById('nav-' + target).classList.add('active');
-        
-        const screen = document.getElementById('screen-' + target);
-        screen.style.display = (target === 'campo') ? 'flex' : 'block';
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
 
-        if(target === 'squadra') renderSquad();
-        if(target === 'stadio') { generateOpponent(); checkMatchReady(); }
+        // Mostra solo quella scelta
+        const target = document.getElementById('screen-' + id);
+        if(id === 'campo') target.style.display = 'flex';
+        else target.style.display = 'block';
+
+        document.getElementById('btn-' + id).classList.add('active');
     }
 
-    function calcStats(p) {
-        if(!p) return {total:0};
-        const isPT = p.role.includes("PT"), b = BASE[p.level], u = p.upgrades * VALS[p.level], bonus = Math.round(u * 0.4);
-        let s = isPT ? { VEL:b+u, PAS:b+u, DEF:Math.round((b+u)*1.5), RIF:Math.round((b+u)*1.5) } : { VEL:b+u, SHO:b+u, PAS:b+u, DEF:b+u, DRI:b+u };
-        const keys = Object.keys(s); s[keys[p.bias % keys.length]] += bonus; s[keys[(p.bias + 1) % keys.length]] -= bonus;
-        let t = 0; for(let k in s) t += s[k]; return { ...s, total: t };
-    }
-
-    function renderSquad() {
-        const isFull = (squad.pt.length>=1 && squad.df.length>=2 && squad.at.length>=2 && squad.res_pt && squad.res_df && squad.res_at);
-        const draw = (p, roleKey, idx, def) => {
-            let stateClass = "";
-            if(isSubMode) {
-                if(!selectedSub && !roleKey.startsWith('res')) stateClass = "vibrating";
-                if(selectedSub && roleKey === selectedSub.role && idx === selectedSub.idx) stateClass = "vibrating";
-                if(selectedSub && (roleKey === "res_" + selectedSub.role || "res_"+roleKey === selectedSub.role)) stateClass = "target-sub";
-            }
-            if(!p) return `<div class="player-slot" onclick="handleCard('${roleKey}', ${idx})"><div class="empty-label">${def}</div></div>`;
-            const s = calcStats(p);
-            return `<div class="player-slot ${stateClass}" style="border-color:${COLORS[p.level]}" onclick="handleCard('${roleKey}', ${idx})">
-                <div class="card-bg" style="background-image:url('${p.img}')"></div><div class="card-overlay"></div>
-                <div class="card-header"><span class="tag-lvl">LV ${p.level}</span><span class="tag-upg">${p.upgrades >= LIMITS[p.level] ? 'MAX' : p.upgrades}</span></div>
-                <div class="card-info"><span class="card-pwr">${s.total}</span><span class="card-name">${p.name}</span></div>
-            </div>`;
-        };
-        document.getElementById('row-pt').innerHTML = draw(squad.pt[0], 'pt', 0, 'PT');
-        document.getElementById('row-df').innerHTML = draw(squad.df[0], 'df', 0, 'DF') + draw(squad.df[1], 'df', 1, 'DF');
-        document.getElementById('row-at').innerHTML = draw(squad.at[0], 'at', 0, 'AT') + draw(squad.at[1], 'at', 1, 'AT');
-        document.getElementById('row-res').innerHTML = draw(squad.res_pt, 'res_pt', null, 'RIS PT') + draw(squad.res_df, 'res_df', null, 'RIS DF') + draw(squad.res_at, 'res_at', null, 'RIS AT');
-        document.getElementById('shop-area').innerHTML = `<button class="btn-ui" onclick="buyPack()" style="background:var(--gold); margin-bottom:15px;" ${taps<300||isFull?'disabled':''}>${isFull?'SQUADRA COMPLETA':'PACCHETTO (300 TAP)'}</button>`;
-        document.getElementById('sub-mode-btn').style.display = (squad.pt.length>=1 && squad.df.length>=2 && squad.at.length>=2) ? "block" : "none";
-    }
-
-    function handleCard(role, idx) {
-        if(!isSubMode) { let p = (idx === null) ? squad[role] : squad[role][idx]; if(p) openDetails(role, idx); return; }
-        if(!selectedSub) { if(role.startsWith('res')) return; selectedSub = { role, idx }; }
-        else {
-            const isMatch = (role === "res_" + selectedSub.role) || ("res_" + role === selectedSub.role);
-            if(isMatch) {
-                let titolare = squad[selectedSub.role][selectedSub.idx], riserva = (idx === null) ? squad[role] : squad[role][idx];
-                squad[selectedSub.role][selectedSub.idx] = riserva; if(idx === null) squad[role] = titolare; else squad[role][idx] = titolare;
-                save(); toggleSubMode();
-            } else { if(!role.startsWith('res')) selectedSub = { role, idx }; }
+    function buyPlayer() {
+        if(data.taps >= 500) {
+            data.taps -= 500;
+            data.players += 1;
+            document.getElementById('player-list').innerText = "Hai " + data.players + " giocatori.";
+            updateUI();
+        } else {
+            alert("Tap insufficienti!");
         }
-        renderSquad();
     }
 
-    function buyPack() {
-        if(taps < 300) return;
-        taps -= 300; updateUI(); save();
-        const ov = document.getElementById('pack-overlay'); const anim = document.getElementById('anim-card');
-        ov.style.display = 'flex'; anim.classList.add('spinning'); anim.innerHTML = "?";
+    function simulaPartita() {
+        if(data.players < 1) {
+            alert("Ti serve almeno un giocatore!");
+            return;
+        }
+        const log = document.getElementById('log');
+        log.innerHTML = "Inizio partita...<br>";
         setTimeout(() => {
-            anim.classList.remove('spinning');
-            const r = Math.random(); let lv = r<0.02?5 : r<0.08?4 : r<0.2?3 : r<0.5?2 : 1;
-            const name = POOL[lv][Math.floor(Math.random()*POOL[lv].length)];
-            const p = { name, level: lv, upgrades: 0, role: ['PT','DF','AT'][Math.floor(Math.random()*3)], bias: Math.floor(Math.random()*10), img: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}` };
-            let ok = false; const k = p.role.toLowerCase();
-            if(squad[k].length < (k==='pt'?1:2)) { squad[k].push(p); ok = true; }
-            else if(!squad['res_'+k]) { squad['res_'+k] = p; ok = true; }
-            if(ok) { anim.innerHTML = `<img src="${p.img}" width="100%">`; document.getElementById('pack-res').innerText = name.toUpperCase(); save(); renderSquad(); }
-            else { anim.innerHTML = "🚫"; document.getElementById('pack-res').innerText = "SLOT PIENI!"; }
-            document.getElementById('close-pack').style.display = "block";
-        }, 1200);
+            const win = Math.random() > 0.5;
+            if(win) {
+                data.taps += 5000;
+                log.innerHTML += "<span style='color:yellow'>VITTORIA! +5000 Tap</span>";
+            } else {
+                log.innerHTML += "<span style='color:red'>SCONFITTA...</span>";
+            }
+            updateUI();
+        }, 1000);
     }
 
-    function openDetails(role, idx) {
-        let p = (idx === null) ? squad[role] : squad[role][idx];
-        const s = calcStats(p), cost = (p.level * 2000) + (p.upgrades * 800);
-        document.getElementById('details-modal').style.display = 'flex';
-        document.getElementById('m-role').innerText = p.role;
-        document.getElementById('m-category').innerText = CATS[p.level]; document.getElementById('m-category').style.color = COLORS[p.level];
-        document.getElementById('m-name').innerText = p.name; document.getElementById('m-img').src = p.img;
-        document.getElementById('m-total').innerText = `POWER: ${s.total}`;
-        let h = ""; const labs = p.role.includes("PT") ? {VEL:"VEL", PAS:"PAS", DEF:"PRE", RIF:"RIF"} : {VEL:"VEL", SHO:"TIR", PAS:"PAS", DEF:"DIF", DRI:"DRI"};
-        for(let k in labs) { h += `<div class="stat-row"><span>${labs[k]}</span><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${s[k]/10}%"></div></div><span>${s[k]}</span></div>`; }
-        document.getElementById('stats-container').innerHTML = h;
-        const btn = document.getElementById('upg-action-btn');
-        btn.disabled = p.upgrades >= LIMITS[p.level] || taps < cost;
-        btn.innerText = p.upgrades >= LIMITS[p.level] ? "MAX" : `POTENZIA (${cost})`;
-        btn.onclick = () => { taps -= cost; p.upgrades++; save(); openDetails(role, idx); renderSquad(); updateUI(); };
+    function resetGame() {
+        if(confirm("Vuoi resettare?")) {
+            localStorage.clear();
+            location.reload();
+        }
     }
 
-    // LOGICA STADIO
-    function checkMatchReady() {
-        const isReady = (squad.pt.length >= 1 && squad.df.length >= 2 && squad.at.length >= 2);
-        document.getElementById('start-match-btn').disabled = !isReady;
-        document.getElementById('match-error').style.display = isReady ? 'none' : 'block';
-    }
-
-    function generateOpponent() {
-        const teams = ["Scappati di Casa FC", "Real Madrido", "AC Picchia", "Pescara Manzia", "Dopolavoro Ferroviario"];
-        const pwr = 500 + Math.floor(Math.random() * 2500);
-        currentOpponent = { name: teams[Math.floor(Math.random()*teams.length)], power: pwr, prize: pwr * 4 };
-        document.getElementById('opp-name').innerText = currentOpponent.name;
-        document.getElementById('opp-power-label').innerText = "Potenza: " + pwr;
-        document.getElementById('match-prize').innerText = currentOpponent.prize.toLocaleString();
-    }
-
-    function startMatch() {
-        document.getElementById('match-overlay').style.display = 'flex';
-        let log = document.getElementById('match-log'); let hS = 0, aS = 0, turn = 0;
-        let myPwr = [...squad.pt, ...squad.df, ...squad.at].reduce((sum, p) => sum + calcStats(p).total, 0);
-        log.innerHTML = "FISCHIO D'INIZIO!<br>";
-        
-        const msgs = ["Azione a centrocampo...", "Tiro potente!", "Parata incredibile!", "Contropiede veloce!", "Fallo a metà campo!"];
-        let matchInt = setInterval(() => {
-            turn++;
-            let msg = msgs[Math.floor(Math.random()*msgs.length)];
-            let prob = myPwr / (myPwr + currentOpponent.power);
-            
-            if(Math.random() < 0.3) { // Possibilità di gol
-                if(Math.random() < prob) { hS++; log.innerHTML += `<span style="color:var(--gold)">GOAL!</span> ${msg}<br>`; }
-                else 
+    updateUI();
+</script>
+</body>
+</html>
