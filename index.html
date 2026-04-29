@@ -21,7 +21,6 @@
         #ball { width: 120px; cursor: pointer; transition: 0.1s; -webkit-tap-highlight-color: transparent; }
         #ball:active { transform: scale(0.8); }
 
-        /* PACK ANIMATION GACHA STYLE */
         #pack-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; align-items: center; justify-content: center; flex-direction: column; }
         .anim-card { width: 140px; height: 210px; border: 6px solid white; border-radius: 12px; background: #222; display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 80px; }
         .spinning { animation: spin 0.2s infinite linear, colorShift 0.2s infinite linear; }
@@ -32,7 +31,6 @@
             100% { border-color: var(--rarity-5); }
         }
 
-        /* VIBRAZIONE */
         @keyframes vibrate {
             0% { transform: translate(0); }
             25% { transform: translate(1px, 1px) rotate(0.5deg); }
@@ -66,7 +64,8 @@
         .stat-bar-bg { flex: 1; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
         .stat-bar-fill { height: 100%; background: #1a472a; }
         
-        .btn-ui { border: none; font-weight: bold; border-radius: 8px; padding: 12px; cursor: pointer; width: 100%; margin-top: 10px; font-family: 'Arial Black', sans-serif; }
+        .btn-ui { border: none; font-weight: bold; border-radius: 8px; padding: 12px; cursor: pointer; width: 100%; margin-top: 10px; font-family: 'Arial Black', sans-serif; text-transform: uppercase; }
+        .btn-ui:disabled { background: #555 !important; color: #aaa; cursor: not-allowed; }
         
         #navbar { display: flex; background: #000; padding: 10px 0; border-top: 2px solid var(--gold); position: fixed; bottom: 0; width: 100%; z-index: 20; }
         .nav-item { flex: 1; text-align: center; font-size: 11px; color: #666; cursor: pointer; }
@@ -172,7 +171,9 @@
     }
 
     function renderSquad() {
-        const isFull = (squad.pt.length >= 1 && squad.df.length >= 2 && squad.at.length >= 2 && squad.res_pt && squad.res_df && squad.res_at);
+        const isTitFull = (squad.pt.length >= 1 && squad.df.length >= 2 && squad.at.length >= 2);
+        const isResFull = (squad.res_pt && squad.res_df && squad.res_at);
+        const isFull = isTitFull && isResFull;
 
         const draw = (p, roleKey, idx, defaultRole) => {
             let stateClass = "";
@@ -199,7 +200,8 @@
         document.getElementById('row-at').innerHTML = draw(squad.at[0], 'at', 0, 'AT') + draw(squad.at[1], 'at', 1, 'AT');
         document.getElementById('row-res').innerHTML = draw(squad.res_pt, 'res_pt', null, 'PT') + draw(squad.res_df, 'res_df', null, 'DF') + draw(squad.res_at, 'res_at', null, 'AT');
         
-        document.getElementById('shop-area').innerHTML = `<button class="btn-ui" onclick="buyPack()" style="background:var(--gold); margin-bottom:10px;" ${taps<300?'disabled':''}>PACCHETTO (300 TAP)</button>`;
+        const packBtnLabel = isFull ? 'SQUADRA COMPLETA' : 'PACCHETTO (300 TAP)';
+        document.getElementById('shop-area').innerHTML = `<button class="btn-ui" onclick="buyPack()" style="background:var(--gold); margin-bottom:10px;" ${taps < 300 || isFull ? 'disabled' : ''}>${packBtnLabel}</button>`;
         
         const subBtn = document.getElementById('sub-mode-btn');
         if (isFull) {
@@ -252,7 +254,6 @@
             let lv = r<0.02?5 : r<0.08?4 : r<0.2?3 : r<0.5?2 : 1;
             const name = POOL[lv][Math.floor(Math.random()*POOL[lv].length)];
             
-            // CONTROLLO DOPPIONE
             const allInSquad = [...squad.pt, ...squad.df, ...squad.at, squad.res_pt, squad.res_df, squad.res_at].filter(x => x);
             const isDuplicate = allInSquad.some(p => p.name === name);
 
