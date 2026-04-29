@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Soccer Stars - Database Edition</title>
+    <title>Soccer Stars - Stable Edition</title>
     <style>
         :root {
             --gold: #ffd700;
@@ -133,8 +133,8 @@
         ],
         3: Array.from({length:50}, (_, i) => {
             const role = i < 10 ? "PT" : (i < 30 ? "DF" : "AT");
-            const names = ["Ciro Fermo", "Luka Modriccia", "Bruno Fernandone", "Nicolò Barellino", "Paulo Dybalena", "Jack Grealishia", "Declan Risotto", "Son Heung-Minni", "Enzo Fernandone", "Darwin Nunezza"];
-            return {n: (names[i%10] + " " + (i+1)), r: role};
+            const baseNames = ["Ciro Fermo", "Luka Modriccia", "Bruno Fernandone", "Nicolò Barellino", "Paulo Dybalena", "Jack Grealishia", "Declan Risotto", "Son Heung-Minni", "Enzo Fernandone", "Darwin Nunezza"];
+            return {n: baseNames[i%10] + " " + (i+1), r: role};
         }),
         2: Array.from({length:90}, (_, i) => ({n: "Promessa " + (i+1), r: i < 18 ? "PT" : (i < 54 ? "DF" : "AT")})),
         1: Array.from({length:150}, (_, i) => ({n: "Esordiente " + (i+1), r: i < 30 ? "PT" : (i < 90 ? "DF" : "AT")}))
@@ -146,18 +146,27 @@
     const BASE = [0, 40, 60, 90, 150, 250];
     const VALS = [0, 2, 4, 8, 15, 30];
 
-    // --- LOGICA ---
-    let taps = localStorage.getItem('taps_v20') ? parseInt(localStorage.getItem('taps_v20')) : 2000000;
-    let squad = JSON.parse(localStorage.getItem('squad_v20')) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
+    // --- LOGICA DI STATO (Chiave univoca per evitare conflitti) ---
+    const STORAGE_KEY_TAPS = 'soccer_stars_taps_stable';
+    const STORAGE_KEY_SQUAD = 'soccer_stars_squad_stable';
+
+    let taps = localStorage.getItem(STORAGE_KEY_TAPS) ? parseInt(localStorage.getItem(STORAGE_KEY_TAPS)) : 2000000;
+    let squad = JSON.parse(localStorage.getItem(STORAGE_KEY_SQUAD)) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
+    
     let isSubMode = false;
     let selectedSub = null;
 
-    function save() { localStorage.setItem('taps_v20', taps); localStorage.setItem('squad_v20', JSON.stringify(squad)); }
+    function save() {
+        localStorage.setItem(STORAGE_KEY_TAPS, taps);
+        localStorage.setItem(STORAGE_KEY_SQUAD, JSON.stringify(squad));
+    }
+
     function doTap() { taps++; updateUI(); save(); }
     function updateUI() { document.getElementById('tap-count').innerText = taps.toLocaleString(); }
     function getRoleName(r) { return r === "PT" ? "Portiere" : (r === "DF" ? "Difensore" : "Attaccante"); }
 
     function calcStats(p) {
+        if (!p) return { total: 0 };
         const isPT = p.role === "PT";
         const b = BASE[p.level], u = p.upgrades * VALS[p.level], bonus = Math.round(u * 0.4);
         let s = isPT ? { VEL:b+u, PAS:b+u, DEF:Math.round((b+u)*1.5), RIF:Math.round((b+u)*1.5) } : { VEL:b+u, SHO:b+u, PAS:b+u, DEF:b+u, DRI:b+u };
@@ -175,6 +184,7 @@
 
     function renderSquad() {
         const isFull = (squad.pt.length >= 1 && squad.df.length >= 2 && squad.at.length >= 2 && squad.res_pt && squad.res_df && squad.res_at);
+        
         const draw = (p, roleKey, idx, defaultRole) => {
             let stateClass = "";
             if(isSubMode) {
@@ -190,27 +200,36 @@
                 <div class="card-info"><span class="card-role-tag">${getRoleName(p.role)}</span><span class="card-pwr">${s.total}</span><span class="card-name">${p.name}</span></div>
             </div>`;
         };
+
         document.getElementById('row-pt').innerHTML = draw(squad.pt[0], 'pt', 0, 'PT');
         document.getElementById('row-df').innerHTML = draw(squad.df[0], 'df', 0, 'DF') + draw(squad.df[1], 'df', 1, 'DF');
         document.getElementById('row-at').innerHTML = draw(squad.at[0], 'at', 0, 'AT') + draw(squad.at[1], 'at', 1, 'AT');
         document.getElementById('row-res').innerHTML = draw(squad.res_pt, 'res_pt', null, 'PT') + draw(squad.res_df, 'res_df', null, 'DF') + draw(squad.res_at, 'res_at', null, 'AT');
+        
         document.getElementById('shop-area').innerHTML = `<button class="btn-ui" onclick="buyPack()" style="background:var(--gold); margin-bottom:10px;" ${taps<300||isFull?'disabled':''}>${isFull?'SQUADRA COMPLETA':'PACCHETTO (300 TAP)'}</button>`;
+        
         const subBtn = document.getElementById('sub-mode-btn');
         subBtn.style.display = isFull ? "block" : "none";
+        if (!isFull) isSubMode = false;
     }
 
     function handleCard(role, idx) {
         let p = (idx === null) ? squad[role] : squad[role][idx];
         if(!isSubMode) { if(p) openDetails(role, idx); return; }
-        if(!selectedSub) { if(!role.startsWith('res')) selectedSub = { role, idx }; }
-        else {
-            if(role === "res_" + selectedSub.role || "res_"+role === selectedSub.role) {
+        
+        if(!selectedSub) { 
+            if(!role.startsWith('res') && p) selectedSub = { role, idx }; 
+        } else {
+            const isMatch = (role === "res_" + selectedSub.role || "res_" + role === selectedSub.role);
+            if(isMatch) {
                 let titolare = squad[selectedSub.role][selectedSub.idx];
                 let riserva = (idx === null) ? squad[role] : squad[role][idx];
                 squad[selectedSub.role][selectedSub.idx] = riserva;
                 if(idx === null) squad[role] = titolare; else squad[role][idx] = titolare;
                 save(); toggleSubMode();
-            } else if(!role.startsWith('res')) selectedSub = { role, idx };
+            } else {
+                if(!role.startsWith('res') && p) selectedSub = { role, idx };
+            }
         }
         renderSquad();
     }
@@ -218,36 +237,51 @@
     function buyPack() {
         if(taps < 300) return;
         taps -= 300; save(); updateUI();
+        
         const ov = document.getElementById('pack-overlay');
         const anim = document.getElementById('anim-card');
         ov.style.display = 'flex';
-        anim.classList.add('spinning'); anim.innerHTML = "?"; anim.style.borderColor = "white";
-        document.getElementById('pack-res').innerText = ""; document.getElementById('pack-cat').innerText = "";
+        anim.classList.add('spinning');
+        anim.innerHTML = "?";
+        anim.style.borderColor = "white";
+        document.getElementById('pack-res').innerText = "";
+        document.getElementById('pack-cat').innerText = "";
 
         setTimeout(() => {
             anim.classList.remove('spinning');
             const r = Math.random();
             let lv = r<0.02?5 : r<0.08?4 : r<0.2?3 : r<0.5?2 : 1;
             
-            // Trova ruolo disponibile
-            let possibleRoles = [];
-            if(squad.pt.length < 1 || !squad.res_pt) possibleRoles.push("PT");
-            if(squad.df.length < 2 || !squad.res_df) possibleRoles.push("DF");
-            if(squad.at.length < 2 || !squad.res_at) possibleRoles.push("AT");
-            
-            let finalRole = possibleRoles[Math.floor(Math.random()*possibleRoles.length)];
+            // Trova quale ruolo serve davvero
+            let rolesNeeded = [];
+            if(squad.pt.length < 1 || !squad.res_pt) rolesNeeded.push("PT");
+            if(squad.df.length < 2 || !squad.res_df) rolesNeeded.push("DF");
+            if(squad.at.length < 2 || !squad.res_at) rolesNeeded.push("AT");
+
+            if(rolesNeeded.length === 0) {
+                anim.innerHTML = "🚫"; document.getElementById('pack-res').innerText = "SQUADRA PIENA";
+                document.getElementById('close-pack').style.display = "block";
+                return;
+            }
+
+            let finalRole = rolesNeeded[Math.floor(Math.random()*rolesNeeded.length)];
             let candidates = DB_MASTER[lv].filter(c => c.r === finalRole);
             
+            // Se per sfortuna non ci sono candidati di quel livello/ruolo, scendi di livello
+            if(candidates.length === 0) candidates = DB_MASTER[1].filter(c => c.r === finalRole);
+
             let chosen = null;
-            let attempts = 0;
-            while(attempts < 50) {
+            for(let i=0; i<100; i++) { // Max 100 tentativi per evitare loop
                 let temp = candidates[Math.floor(Math.random()*candidates.length)];
                 if(!isDuplicate(temp.n)) { chosen = temp; break; }
-                attempts++;
             }
 
             if(chosen) {
-                const p = { name: chosen.n, level: lv, upgrades: 0, role: chosen.r, bias: Math.floor(Math.random()*10), img: `https://api.dicebear.com/7.x/avataaars/svg?seed=${chosen.n}` };
+                const p = { 
+                    name: chosen.n, level: lv, upgrades: 0, role: chosen.r, 
+                    bias: Math.floor(Math.random()*10), 
+                    img: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(chosen.n)}` 
+                };
                 const k = chosen.r.toLowerCase();
                 if(squad[k].length < (k==='pt'?1:2)) squad[k].push(p);
                 else squad['res_'+k] = p;
@@ -259,7 +293,7 @@
                 document.getElementById('pack-cat').style.color = COLORS[lv];
                 save(); renderSquad();
             } else {
-                anim.innerHTML = "🚫"; document.getElementById('pack-res').innerText = "DUPLICATO / PIENO";
+                anim.innerHTML = "🔄"; document.getElementById('pack-res').innerText = "Riprova (Duplicato)";
             }
             document.getElementById('close-pack').style.display = "block";
         }, 1200);
@@ -267,6 +301,7 @@
 
     function openDetails(role, idx) {
         let p = (idx === null) ? squad[role] : squad[role][idx];
+        if(!p) return;
         const s = calcStats(p);
         const cost = (p.level * 2000) + (p.upgrades * 800);
         document.getElementById('details-modal').style.display = 'flex';
@@ -276,19 +311,13 @@
         document.getElementById('m-category').innerText = CATS[p.level];
         document.getElementById('m-category').style.color = COLORS[p.level];
         document.getElementById('m-total').innerText = `POWER: ${s.total}`;
+        
         let h = "";
         const labels = p.role === "PT" ? {VEL:"VEL", PAS:"PAS", DEF:"PRE", RIF:"RIF"} : {VEL:"VEL", SHO:"TIR", PAS:"PAS", DEF:"DIF", DRI:"DRI"};
         for(let k in labels) h += `<div class="stat-row"><span>${labels[k]}</span><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${s[k]/10}%"></div></div><span>${s[k]}</span></div>`;
         document.getElementById('stats-container').innerHTML = h;
+        
         const btn = document.getElementById('upg-action-btn');
         btn.disabled = p.upgrades >= LIMITS[p.level] || taps < cost;
-        btn.innerText = p.upgrades >= LIMITS[p.level] ? "MAX" : `POTENZIA (${cost})`;
-        btn.onclick = () => { taps -= cost; p.upgrades++; save(); openDetails(role, idx); renderSquad(); updateUI(); };
-    }
-
-    function toggleSubMode() { isSubMode = !isSubMode; selectedSub = null; renderSquad(); document.getElementById('sub-mode-btn').innerText = isSubMode ? "ANNULLA" : "MODALITÀ SOSTITUZIONE"; }
-    function showGame() { document.getElementById('squad-screen').style.display = 'none'; document.getElementById('nav-campo').classList.add('active'); document.getElementById('nav-squadra').classList.remove('active'); }
-    function toggleSquad() { document.getElementById('squad-screen').style.display = 'block'; document.getElementById('nav-squadra').classList.add('active'); document.getElementById('nav-campo').classList.remove('active'); renderSquad(); }
-    function finishPack() { document.getElementById('pack-overlay').style.display='none'; document.getElementById('close-pack').style.display='none'; }
-    function closeDetails() { document.getElementById('details-modal').style.display='none'; }
-    function resetGame() { if(confirm("RESET?")) { localStorage.
+        btn.innerText = p.upgrades >= LIMITS[p.level] ? "MAX RAGGIUNTO" : `POTENZIA (${cost})`;
+        btn.onclick = () => { if(taps >= cos
