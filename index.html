@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Soccer Stars - Final Fix</title>
+    <title>Soccer Stars - Real Odds Edition</title>
     <style>
         :root {
             --gold: #ffd700;
@@ -57,10 +57,6 @@
         #navbar { display: flex; background: #000; padding: 10px 0; border-top: 2px solid var(--gold); position: fixed; bottom: 0; width: 100%; z-index: 20; }
         .nav-item { flex: 1; text-align: center; font-size: 11px; color: #666; cursor: pointer; }
         .nav-item.active { color: var(--gold); }
-        
-        @keyframes vibrate { 0% { transform: translate(0); } 25% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -1px); } 100% { transform: translate(0); } }
-        .vibrating { animation: vibrate 0.2s infinite; border: 2px solid white !important; }
-        .target-sub { animation: vibrate 0.1s infinite; border: 2px solid var(--gold) !important; box-shadow: 0 0 15px var(--gold); }
     </style>
 </head>
 <body>
@@ -99,7 +95,6 @@
         <div id="m-category" style="font-size:10px; text-align:center; font-weight:bold;"></div>
         <img id="m-img" src="" style="width:80px; margin:10px auto; display:block;">
         <h2 id="m-name" style="text-align:center; margin:5px 0; font-size:18px;"></h2>
-        <div id="stats-container" style="font-size: 11px; color: #333;"></div>
         <div id="m-total" style="text-align:center; font-size:20px; margin:10px 0; font-weight:bold;"></div>
         <button id="upg-action-btn" class="btn-ui" style="background:#1a472a; color:white;"></button>
     </div>
@@ -111,78 +106,47 @@
 </div>
 
 <script>
-    // --- DATABASE FISSO ---
-    const DB_MASTER = {
-        5: [
-            {n:"Gigio Paperonum", r:"PT"}, {n:"Manuel Neuerbo", r:"PT"},
-            {n:"Paolo Maldino", r:"DF"}, {n:"Sergio Ramoscio", r:"DF"}, {n:"Virgil Van Disco", r:"DF"}, {n:"Franz Brick-enbauer", r:"DF"},
-            {n:"Lio Pulce Messi", r:"AT"}, {n:"Cristiano Ronalda", r:"AT"}, {n:"Kylian Mbappappé", r:"AT"}, {n:"Erling Aland", r:"AT"}
-        ],
-        4: [
-            {n:"Thibaut Cortese", r:"PT"}, {n:"Alisson Beckerre", r:"PT"}, {n:"Ederson Volante", r:"PT"}, {n:"Jan Oblacco", r:"PT"}, {n:"Mike Magman", r:"PT"}, {n:"Marc Ter Stecca", r:"PT"},
-            {n:"Ruben Diaspro", r:"DF"}, {n:"Achraf Volante", r:"DF"}, {n:"Theo Ernannde", r:"DF"}, {n:"Eder Militaoia", r:"DF"}, {n:"Marquinhosinho", r:"DF"}, {n:"Alphonso Runner", r:"DF"},
-            {n:"Kevin De Bruyne-a", r:"AT"}, {n:"Mo Salata", r:"AT"}, {n:"Vini Juniorre", r:"AT"}, {n:"Harry Cannone", r:"AT"}, {n:"Lautaro Toro", r:"AT"}, {n:"Robert Lewandovino", r:"AT"}
-        ]
-    };
-
     const COLORS = ["", "#95a5a6", "#2ecc71", "#3498db", "#9b59b6", "#f1c40f"];
     const CATS = ["", "ESORDIENTE", "PROMESSA", "FUORICLASSE", "CAMPIONE", "PALLONE D'ORO"];
-    const LIMITS = [0, 30, 25, 20, 15, 10];
-    const BASE = [0, 40, 60, 90, 150, 250];
-    const VALS = [0, 2, 4, 8, 15, 30];
+    
+    // --- DATABASE ---
+    const DB_TOP = {
+        5: [{n:"Gigio Paperonum", r:"PT"}, {n:"Paolo Maldino", r:"DF"}, {n:"Lio Pulce Messi", r:"AT"}],
+        4: [{n:"Thibaut Cortese", r:"PT"}, {n:"Ruben Diaspro", r:"DF"}, {n:"Mo Salata", r:"AT"}]
+    };
 
-    // --- CARICAMENTO SICURO ---
     let taps = 2000000;
     let squad = { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
 
-    try {
-        const savedTaps = localStorage.getItem('taps_v99');
-        if(savedTaps !== null) taps = parseInt(savedTaps);
-        
-        const savedSquad = localStorage.getItem('squad_v99');
-        if(savedSquad !== null) squad = JSON.parse(savedSquad);
-    } catch(e) { console.error("Errore storage", e); }
-
-    let isSubMode = false;
-    let selectedSub = null;
+    // CARICAMENTO REALE
+    function load() {
+        const t = localStorage.getItem('taps_v100');
+        const s = localStorage.getItem('squad_v100');
+        if(t) taps = parseInt(t);
+        if(s) squad = JSON.parse(s);
+    }
+    load();
 
     function save() {
-        localStorage.setItem('taps_v99', taps);
-        localStorage.setItem('squad_v99', JSON.stringify(squad));
+        localStorage.setItem('taps_v100', taps);
+        localStorage.setItem('squad_v100', JSON.stringify(squad));
     }
 
-    function genName(lv) {
-        const p = ["Beppe", "Lino", "Ciro", "Vito", "Dino", "Mimo", "Gino", "Nico", "Ugo", "Rino"];
-        const s = ["Scivolone", "Palo", "Rinvio", "Tunnel", "Cross", "Frenato", "Zoppo", "Gancio", "Tacchetto", "Bomber"];
+    function genName() {
+        const p = ["Berto", "Ugo", "Ciro", "Lino", "Vito"];
+        const s = ["Scivolone", "Palo", "Rinvio", "Tunnel", "Cross"];
         return p[Math.floor(Math.random()*p.length)] + " " + s[Math.floor(Math.random()*s.length)];
     }
 
     function doTap() { taps++; updateUI(); save(); }
     function updateUI() { document.getElementById('tap-count').innerText = taps.toLocaleString(); }
-    function getRoleName(r) { return r==="PT"?"Portiere":(r==="DF"?"Difensore":"Attaccante"); }
-
-    function calcStats(p) {
-        if(!p) return { total:0 };
-        const b = BASE[p.level], u = p.upgrades * VALS[p.level];
-        const isPT = p.role === "PT";
-        let total = isPT ? (b+u)*4 : (b+u)*5;
-        return { total };
-    }
 
     function renderSquad() {
-        const isFull = (squad.pt.length>=1 && squad.df.length>=2 && squad.at.length>=2 && squad.res_pt && squad.res_df && squad.res_at);
         const draw = (p, roleKey, idx, def) => {
-            let state = "";
-            if(isSubMode) {
-                if(!selectedSub) state = "vibrating";
-                else if(selectedSub.role === roleKey && selectedSub.idx === idx) state = "vibrating";
-                else if(roleKey.includes(selectedSub.role)) state = "target-sub";
-            }
-            if(!p) return `<div class="player-slot"><div class="empty-label">${getRoleName(def)}</div></div>`;
-            return `<div class="player-slot ${state}" style="border-color:${COLORS[p.level]}" onclick="handleCard('${roleKey}', ${idx})">
-                <div class="card-bg" style="background-image:url('${p.img}')"></div><div class="card-overlay"></div>
-                <div class="card-header"><span class="tag-lvl">LV ${p.level}</span><span class="tag-upg">${p.upgrades>=LIMITS[p.level]?'MAX':p.upgrades}</span></div>
-                <div class="card-info"><span class="card-role-tag">${getRoleName(p.role)}</span><span class="card-pwr">${calcStats(p).total}</span><span class="card-name">${p.name}</span></div>
+            if(!p) return `<div class="player-slot"><div class="empty-label">${def}</div></div>`;
+            return `<div class="player-slot" style="border-color:${COLORS[p.level]}" onclick="openDetails('${roleKey}', ${idx})">
+                <div class="card-bg" style="background-image:url('${p.img}')"></div>
+                <div class="card-info"><span class="card-pwr">${(p.level*50)+(p.upgrades*10)}</span><span class="card-name">${p.name}</span></div>
             </div>`;
         };
 
@@ -190,82 +154,87 @@
         document.getElementById('row-df').innerHTML = draw(squad.df[0], 'df', 0, 'DF') + draw(squad.df[1], 'df', 1, 'DF');
         document.getElementById('row-at').innerHTML = draw(squad.at[0], 'at', 0, 'AT') + draw(squad.at[1], 'at', 1, 'AT');
         document.getElementById('row-res').innerHTML = draw(squad.res_pt, 'res_pt', null, 'PT') + draw(squad.res_df, 'res_df', null, 'DF') + draw(squad.res_at, 'res_at', null, 'AT');
-        document.getElementById('shop-area').innerHTML = `<button class="btn-ui" onclick="buyPack()" style="background:var(--gold); width:250px;" ${taps<300||isFull?'disabled':''}>${isFull?'SQUADRA COMPLETA':'PACCHETTO (300 TAP)'}</button>`;
-        document.getElementById('sub-mode-btn').style.display = isFull ? "block" : "none";
+        
+        document.getElementById('shop-area').innerHTML = `<button class="btn-ui" onclick="buyPack()" style="background:var(--gold); width:250px;">PACCHETTO (300 TAP)</button>`;
     }
 
     function buyPack() {
-        if(taps<300) return;
-        taps-=300; updateUI();
+        if(taps < 300) return;
+        taps -= 300; updateUI();
+
         const ov = document.getElementById('pack-overlay');
         const anim = document.getElementById('anim-card');
         ov.style.display = 'flex';
-        anim.classList.add('spinning'); anim.innerHTML = "?"; anim.style.borderColor = "white";
-        document.getElementById('pack-res').innerText = ""; 
+        anim.classList.add('spinning');
+        anim.innerHTML = "?";
+        anim.style.borderColor = "white";
+        document.getElementById('pack-res').innerText = "";
         document.getElementById('pack-cat').innerText = "ESTRAZIONE...";
         document.getElementById('close-pack').style.display = "none";
 
         setTimeout(() => {
             anim.classList.remove('spinning');
-            let lv = Math.random()<0.02?5:Math.random()<0.08?4:Math.random()<0.2?3:Math.random()<0.5?2:1;
-            let roles = [];
-            if(squad.pt.length<1 || !squad.res_pt) roles.push("PT");
-            if(squad.df.length<2 || !squad.res_df) roles.push("DF");
-            if(squad.at.length<2 || !squad.res_at) roles.push("AT");
             
-            let r = roles[Math.floor(Math.random()*roles.length)];
-            let name = (lv>=4) ? DB_MASTER[lv].filter(x=>x.r===r)[0]?.n || genName(lv) : genName(lv);
-            
-            let p = { name, level:lv, upgrades:0, role:r, bias:Math.floor(Math.random()*10), img:`https://api.dicebear.com/7.x/avataaars/svg?seed=${name}` };
-            
-            let k = r.toLowerCase();
-            if(squad[k].length < (k==='pt'?1:2)) squad[k].push(p); else squad['res_'+k] = p;
+            // PROBABILITÀ REALI
+            const rand = Math.random();
+            let lv = 1;
+            if(rand < 0.01) lv = 5;
+            else if(rand < 0.05) lv = 4;
+            else if(rand < 0.20) lv = 3;
+            else if(rand < 0.50) lv = 2;
 
-            anim.innerHTML = `<img src="${p.img}" width="100%">`; anim.style.borderColor = COLORS[lv];
-            document.getElementById('pack-res').innerText = p.name;
-            document.getElementById('pack-cat').innerText = CATS[lv];
-            document.getElementById('pack-cat').style.color = COLORS[lv];
+            const roles = ["PT", "DF", "AT"];
+            const r = roles[Math.floor(Math.random()*3)];
+            
+            // CONTROLLO SLOT LIBERI
+            let canAdd = false;
+            let key = r.toLowerCase();
+            if(squad[key].length < (r==="PT"?1:2)) canAdd = "tit";
+            else if(!squad["res_"+key]) canAdd = "res";
+
+            if(canAdd) {
+                let name = (lv >= 4) ? DB_TOP[lv].find(x => x.r === r)?.n || genName() : genName();
+                let p = { name, level: lv, upgrades: 0, role: r, img: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}` };
+                
+                if(canAdd === "tit") squad[key].push(p);
+                else squad["res_"+key] = p;
+
+                anim.innerHTML = `<img src="${p.img}" width="100%">`;
+                anim.style.borderColor = COLORS[lv];
+                document.getElementById('pack-res').innerText = p.name;
+                document.getElementById('pack-cat').innerText = CATS[lv];
+                document.getElementById('pack-cat').style.color = COLORS[lv];
+            } else {
+                anim.innerHTML = "❌";
+                document.getElementById('pack-res').innerText = "DOPPIONE!";
+                document.getElementById('pack-cat').innerText = "RUOLO GIA' PIENO";
+            }
+            
             document.getElementById('close-pack').style.display = "block";
             save(); renderSquad();
         }, 1200);
     }
 
-    function handleCard(role, idx) {
-        let p = (idx===null) ? squad[role] : squad[role][idx];
-        if(!isSubMode) { if(p) openDetails(role, idx); return; }
-        if(!selectedSub) { if(!role.includes('res') && p) selectedSub = {role, idx}; }
-        else {
-            if(role.includes(selectedSub.role)) {
-                let tit = squad[selectedSub.role][selectedSub.idx];
-                let ris = (idx===null)?squad[role]:squad[role][idx];
-                squad[selectedSub.role][selectedSub.idx] = ris;
-                if(idx===null) squad[role] = tit; else squad[role][idx] = tit;
-                save(); toggleSubMode();
-            } else if(!role.includes('res') && p) selectedSub = {role, idx};
-        }
-        renderSquad();
-    }
-
     function openDetails(role, idx) {
-        let p = (idx===null)?squad[role]:squad[role][idx];
-        const cost = (p.level*2000)+(p.upgrades*800);
-        document.getElementById('details-modal').style.display='flex';
+        let p = (idx === null) ? squad[role] : squad[role][idx];
+        if(!p) return;
+        document.getElementById('details-modal').style.display = 'flex';
         document.getElementById('m-name').innerText = p.name;
         document.getElementById('m-img').src = p.img;
-        document.getElementById('m-total').innerText = "POWER: " + calcStats(p).total;
+        document.getElementById('m-total').innerText = "POWER: " + ((p.level*50)+(p.upgrades*10));
+        const cost = (p.level*1000) + (p.upgrades*500);
         const btn = document.getElementById('upg-action-btn');
-        btn.innerText = p.upgrades>=LIMITS[p.level]?"MAX":"POTENZIA ("+cost+")";
-        btn.onclick = () => { if(taps>=cost && p.upgrades<LIMITS[p.level]){ taps-=cost; p.upgrades++; save(); openDetails(role,idx); renderSquad(); updateUI(); } };
+        btn.innerText = `POTENZIA (${cost})`;
+        btn.onclick = () => { if(taps>=cost){ taps-=cost; p.upgrades++; save(); openDetails(role, idx); renderSquad(); updateUI(); }};
     }
 
-    function showGame() { document.getElementById('squad-screen').style.display='none'; document.getElementById('nav-campo').classList.add('active'); document.getElementById('nav-squadra').classList.remove('active'); }
-    function toggleSquad() { document.getElementById('squad-screen').style.display='block'; document.getElementById('nav-squadra').classList.add('active'); document.getElementById('nav-campo').classList.remove('active'); renderSquad(); }
+    function showGame() { document.getElementById('squad-screen').style.display='none'; }
+    function toggleSquad() { document.getElementById('squad-screen').style.display='block'; renderSquad(); }
     function finishPack() { document.getElementById('pack-overlay').style.display='none'; }
     function closeDetails() { document.getElementById('details-modal').style.display='none'; }
-    function toggleSubMode() { isSubMode=!isSubMode; selectedSub=null; renderSquad(); }
-    function resetGame() { if(confirm("RESET?")) { localStorage.clear(); location.reload(); } }
+    function resetGame() { localStorage.clear(); location.reload(); }
 
-    window.onload = () => { updateUI(); renderSquad(); };
+    window.onload = () => updateUI();
 </script>
 </body>
 </html>
