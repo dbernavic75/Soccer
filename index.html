@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Soccer Stars - Elite Manager</title>
+    <title>Soccer Stars - Pro Manager</title>
     <style>
         :root {
             --gold: #ffd700;
@@ -14,58 +14,51 @@
 
         /* HEADER */
         #header { height: 60px; background: #111; border-bottom: 2px solid var(--gold); display: flex; justify-content: space-between; align-items: center; padding: 0 15px; flex-shrink: 0; z-index: 1001; }
-        .stat-box { text-align: center; }
         .stat-val { font-size: 18px; color: var(--gold); display: block; }
         .stat-lab { font-size: 8px; text-transform: uppercase; color: #aaa; }
 
-        /* CONTENT AREA */
+        /* CONTENT */
         #main-content { flex-grow: 1; position: relative; overflow: hidden; }
         .screen { display: none; width: 100%; height: 100%; padding: 15px; overflow-y: auto; padding-bottom: 100px; }
 
         /* CAMPO */
         #scr-campo { display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #2e7d32 0%, #1a472a 100%); }
-        #ball { width: 160px; cursor: pointer; transition: transform 0.1s; z-index: 10; }
+        #ball { width: 160px; cursor: pointer; transition: transform 0.1s; }
         #ball:active { transform: scale(0.85); }
 
-        /* SQUADRA & CARTE */
-        .section-title { text-align: center; color: var(--gold); font-size: 10px; margin: 15px 0 5px; border-bottom: 1px solid rgba(255,215,0,0.3); }
+        /* CARTE */
         .row { display: flex; justify-content: center; gap: 6px; margin-bottom: 10px; min-height: 110px; flex-wrap: wrap; }
+        .section-title { text-align: center; color: var(--gold); font-size: 10px; margin: 15px 0 5px; border-bottom: 1px solid rgba(255,215,0,0.3); }
         
         .card { width: 75px; height: 115px; border-radius: 6px; position: relative; background: #222; border: 2px solid #333; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; }
-        .empty-slot { margin: auto; font-size: 8px; color: #555; text-align: center; text-transform: uppercase; }
-        .card-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0.6; z-index: 1; }
+        .card-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0.5; z-index: 1; }
         .card-lvl { position: absolute; top: 2px; left: 4px; background: rgba(0,0,0,0.8); color: white; padding: 1px 3px; border-radius: 2px; font-size: 7px; z-index: 3; }
-        .card-info { position: absolute; bottom: 0; width: 100%; text-align: center; z-index: 3; background: rgba(0,0,0,0.7); padding: 2px 0; }
+        .card-up-count { position: absolute; top: 2px; right: 4px; background: var(--gold); color: black; padding: 1px 3px; border-radius: 2px; font-size: 7px; font-weight: bold; z-index: 3; }
+        .card-info { position: absolute; bottom: 0; width: 100%; text-align: center; z-index: 3; background: rgba(0,0,0,0.8); padding: 2px 0; }
         .card-pwr { font-size: 13px; color: var(--gold); display: block; font-weight: bold; }
-        .card-name { font-size: 6px; text-transform: uppercase; color: #fff; white-space: nowrap; overflow: hidden; }
+        .card-name { font-size: 6px; text-transform: uppercase; color: #fff; }
 
-        /* ANIMAZIONI SOSTITUZIONE */
-        .vibrating { animation: vibra 0.2s infinite; border-color: white !important; }
-        .target-sub { animation: vibra 0.1s infinite; border-color: var(--gold) !important; box-shadow: 0 0 15px var(--gold); }
-        @keyframes vibra { 0% { transform: translate(0); } 25% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -1px); } 100% { transform: translate(0); } }
-
-        /* UI BUTTONS */
-        .btn-ui { background: var(--gold); color: black; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; text-transform: uppercase; margin: 10px 0; }
-        .btn-ui:disabled { background: #444; color: #888; }
-
-        /* NAVBAR */
-        #nav { height: 80px; background: #111; border-top: 2px solid var(--gold); display: flex; justify-content: space-around; align-items: center; flex-shrink: 0; z-index: 1001; }
-        .nav-item { flex: 1; text-align: center; color: #555; font-size: 11px; font-weight: bold; cursor: pointer; }
-        .nav-item.active { color: var(--gold); }
-
-        /* MODALE DETTAGLI */
+        /* MODALE */
         .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index: 2000; align-items:center; justify-content:center; padding: 20px; }
         .modal-box { background: white; color: black; border-radius: 15px; padding: 20px; width: 100%; max-width: 300px; position: relative; }
-        .stat-row { display: flex; align-items: center; gap: 5px; margin: 4px 0; font-size: 10px; }
-        .bar-bg { flex: 1; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
-        .bar-fill { height: 100%; background: #1a472a; }
+        .stat-row { display: flex; align-items: center; justify-content: space-between; margin: 6px 0; font-size: 11px; font-weight: bold; }
+        .stat-label { width: 80px; text-transform: uppercase; }
+        .stat-num { color: #1a472a; width: 30px; text-align: right; }
+        .bar-bg { flex: 1; height: 10px; background: #eee; border-radius: 5px; margin: 0 8px; overflow: hidden; }
+        .bar-fill { height: 100%; background: #2ecc71; transition: width 0.3s; }
+
+        /* NAV & BUTTONS */
+        #nav { height: 80px; background: #111; border-top: 2px solid var(--gold); display: flex; justify-content: space-around; align-items: center; flex-shrink: 0; }
+        .nav-item { flex: 1; text-align: center; color: #555; font-size: 11px; font-weight: bold; cursor: pointer; }
+        .nav-item.active { color: var(--gold); }
+        .btn-ui { background: var(--gold); color: black; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; text-transform: uppercase; margin: 10px 0; }
     </style>
 </head>
 <body>
 
 <div id="header">
-    <div class="stat-box"><span class="stat-lab">Bilancio Tap</span><span id="display-taps" class="stat-val">0</span></div>
-    <button onclick="clearAll()" style="background:#ff4444; color:white; border:none; padding:5px 8px; border-radius:4px; font-size:9px;">RESET TOTALE</button>
+    <div class="stat-box"><span class="stat-lab">TAP ATTUALI</span><span id="display-taps" class="stat-val">0</span></div>
+    <button onclick="clearAll()" style="background:red; color:white; border:none; padding:5px 8px; border-radius:4px; font-size:9px;">RESET</button>
 </div>
 
 <div id="main-content">
@@ -74,144 +67,167 @@
     </div>
 
     <div id="scr-squadra" class="screen">
-        <button id="buy-pack-btn" class="btn-ui" onclick="buyPack()">PACCHETTO ELITE (500 TAP)</button>
-        <div class="section-title">TITOLARI (POTENZA: <span id="team-pwr">0</span>)</div>
+        <button class="btn-ui" onclick="buyPack()">COMPRA PACCHETTO (500 TAP)</button>
+        <div class="section-title">TITOLARI (POWER: <span id="team-pwr">0</span>)</div>
         <div class="row" id="row-pt"></div>
         <div class="row" id="row-df"></div>
         <div class="row" id="row-at"></div>
         <div class="section-title">RISERVE</div>
         <div class="row" id="row-res"></div>
-        <button id="sub-btn" class="btn-ui" style="background:#3498db; color:white; display:none;" onclick="toggleSubMode()">MODALITÀ SOSTITUZIONE</button>
     </div>
 
     <div id="scr-stadio" class="screen">
-        <h2 style="color:var(--gold); text-align:center;">STADIO ELITE</h2>
-        <div style="background:#222; border:2px solid var(--gold); border-radius:15px; padding:20px; text-align:center; margin-top:20px;">
-            <p style="font-size:10px; color:#aaa;">PROSSIMO AVVERSARIO:</p>
+        <h2 style="color:var(--gold); text-align:center;">STADIO</h2>
+        <div id="opp-card" style="background:#222; border:2px solid var(--gold); border-radius:15px; padding:20px; text-align:center; margin-top:20px;">
             <h1 id="opp-name">---</h1>
             <p id="opp-pwr">Potenza: ---</p>
             <button id="match-btn" class="btn-ui" onclick="startMatch()">GIOCA PARTITA</button>
-            <div id="match-log" style="height:100px; overflow-y:auto; background:black; color:lime; font-family:monospace; font-size:10px; margin-top:10px; padding:5px; text-align:left;"></div>
+            <div id="match-log" style="height:80px; overflow-y:auto; background:black; color:lime; font-size:10px; margin-top:10px; padding:5px; text-align:left;"></div>
         </div>
     </div>
 </div>
 
 <div id="nav">
-    <div class="nav-item active" id="nav-campo" onclick="move('campo')">CAMPO</div>
-    <div class="nav-item" id="nav-squadra" onclick="move('squadra')">SQUADRA</div>
-    <div class="nav-item" id="nav-stadio" onclick="move('stadio')">STADIO</div>
+    <div class="nav-item active" onclick="move('campo')">CAMPO</div>
+    <div class="nav-item" onclick="move('squadra')">SQUADRA</div>
+    <div class="nav-item" onclick="move('stadio')">STADIO</div>
 </div>
 
 <div id="modal-detail" class="modal">
     <div class="modal-box">
-        <button onclick="closeModal()" style="position:absolute; right:10px; top:10px; border:none; background:none; font-size:20px;">×</button>
-        <div id="m-cat" style="font-size:10px; font-weight:bold; text-align:center;"></div>
-        <img id="m-img" src="" style="width:80px; display:block; margin:10px auto;">
-        <h2 id="m-name" style="text-align:center; margin-bottom:10px;"></h2>
+        <button onclick="closeModal()" style="position:absolute; right:10px; top:10px; border:none; background:none; font-size:20px; font-weight:bold;">×</button>
+        <div id="m-cat" style="font-size:10px; font-weight:bold; text-align:center; letter-spacing:1px;"></div>
+        <h2 id="m-name" style="text-align:center; margin:10px 0;"></h2>
         <div id="m-stats"></div>
-        <h3 id="m-total" style="text-align:center; margin:10px 0;"></h3>
-        <button id="m-upg" class="btn-ui" style="background:#1a472a; color:white;"></button>
+        <div style="text-align:center; margin-top:15px; border-top:1px solid #eee; padding-top:10px;">
+            <div style="font-size:10px; color:#888;">POTENZA TOTALE</div>
+            <div id="m-total" style="font-size:24px; font-weight:bold; color:gold; text-shadow:1px 1px 0 #000;"></div>
+        </div>
+        <button id="m-upg" class="btn-ui"></button>
     </div>
 </div>
 
 <script>
-    // DATABASE E COSTANTI
     const DB = {
-        5: ["Lionel Messi", "Cristiano Ronaldo", "M. Van Basten", "L. Matthaus", "Zinedine Zidane"],
-        4: ["Kylian Mbappé", "Erling Haaland", "Luka Modric", "K. Benzema", "Neymar Jr"],
-        3: ["Ciro Immobile", "G. Donnarumma", "Theo Hernandez", "D. Vlahovic", "N. Barella"],
-        2: ["Berto Scivolone", "Ugo Pedalino", "Ciro Frenato", "Lino Rincorsa", "Vito Zoppetto"],
+        5: ["Lionel Messi", "Cristiano Ronaldo", "Zinedine Zidane", "Pelé", "Diego Maradona"],
+        4: ["Kylian Mbappé", "Erling Haaland", "Luka Modric", "Kevin De Bruyne", "Neymar Jr"],
+        3: ["Lautaro Martinez", "Gigio Donnarumma", "Theo Hernandez", "Nicolò Barella", "Rafael Leao"],
+        2: ["Ciccio Graziani", "Ugo Pedalino", "Ciro Frenato", "Pippo Inzaghi", "Sandro Sabatini"],
         1: ["Pino Palo", "Gino Traversa", "Mimo Cross", "Tano Angolo", "Beppe Rinvio"]
     };
     const COLORS = ["","#95a5a6","#2ecc71","#3498db","#9b59b6","#f1c40f"];
-    const CATS = ["","ESORDIENTE","PROMESSA","FUORICLASSE","CAMPIONE","PALLONE D'ORO"];
-    const LIMITS = [0, 30, 25, 20, 15, 10];
-    const BASE_PWR = [0, 40, 60, 90, 150, 250];
+    const LIMITS = [0, 30, 25, 20, 15, 10]; // Max upgrade per rarità
+    const BASE_VALUES = [0, 30, 50, 70, 120, 200];
 
-    // STATO GIOCO
-    let taps = localStorage.getItem('s_taps') ? parseInt(localStorage.getItem('s_taps')) : 2000000;
-    let squad = JSON.parse(localStorage.getItem('s_squad')) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
-    let subMode = false, selectedSub = null, currentOpp = null;
+    let taps = localStorage.getItem('v3_taps') ? parseInt(localStorage.getItem('v3_taps')) : 2000000;
+    let squad = JSON.parse(localStorage.getItem('v3_squad')) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
+    let currentOpp = null;
 
     function save() {
-        localStorage.setItem('s_taps', taps);
-        localStorage.setItem('s_squad', JSON.stringify(squad));
+        localStorage.setItem('v3_taps', taps);
+        localStorage.setItem('v3_squad', JSON.stringify(squad));
     }
 
     function refresh() {
         document.getElementById('display-taps').innerText = taps.toLocaleString('it-IT');
     }
 
-    // GESTIONE TAP
     document.getElementById('ball').addEventListener('click', () => { taps++; refresh(); save(); });
 
-    // NAVIGAZIONE
     function move(id) {
         document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        const target = document.getElementById('scr-' + id);
-        target.style.display = (id === 'campo') ? 'flex' : 'block';
-        document.getElementById('nav-' + id).classList.add('active');
+        document.getElementById('scr-' + id).style.display = (id === 'campo') ? 'flex' : 'block';
         if(id === 'squadra') renderSquad();
-        if(id === 'stadio') { generateOpp(); checkStadio(); }
+        if(id === 'stadio') generateOpp();
     }
 
-    // LOGICA SQUADRA
-    function calcStats(p) {
-        if(!p) return {total:0};
-        let b = BASE_PWR[p.level], u = p.upgrades * (p.level * 3);
-        let s = { vel: b+u, tir: b+u, dif: b+u, pas: b+u };
-        let total = s.vel + s.tir + s.dif + s.pas;
-        return { ...s, total };
+    // Calcolo Statistiche Dinamico
+    function getStats(p) {
+        let base = BASE_VALUES[p.level];
+        let growth = p.upgrades * (p.level * 2.5); // Quanto cresce ogni upgrade
+        let stats = {
+            vel: Math.floor(base + growth + (p.name.length % 5)),
+            tir: Math.floor(base + growth + (p.level * 2)),
+            dif: Math.floor(base + growth + (base / 10)),
+            pas: Math.floor(base + growth + 5),
+            fis: Math.floor(base + growth + (p.upgrades))
+        };
+        stats.total = stats.vel + stats.tir + stats.dif + stats.pas + stats.fis;
+        return stats;
     }
 
     function renderSquad() {
         let totalPwr = 0;
         const draw = (p, role, idx, label) => {
-            let state = "";
-            if(subMode) {
-                if(!selectedSub && !role.startsWith('res')) state = "vibrating";
-                if(selectedSub && role === selectedSub.role && idx === selectedSub.idx) state = "vibrating";
-                if(selectedSub && (role === "res_"+selectedSub.role || "res_"+role === selectedSub.role)) state = "target-sub";
-            }
-            if(!p) return `<div class="card" onclick="clickCard('${role}',${idx})"><div class="empty-slot">${label}</div></div>`;
-            let s = calcStats(p);
-            if(!role.startsWith('res')) totalPwr += s.total;
-            return `<div class="card ${state}" style="border-color:${COLORS[p.level]}" onclick="clickCard('${role}',${idx})">
-                <div class="card-img" style="background-image:url('${p.img}')"></div>
+            if(!p) return `<div class="card" onclick="clickSlot('${role}',${idx})"><div style="margin:auto; font-size:8px; color:#555;">${label}</div></div>`;
+            let s = getStats(p);
+            if(!role.includes('res')) totalPwr += s.total;
+            let upText = p.upgrades >= LIMITS[p.level] ? "MAX" : p.upgrades + "/" + LIMITS[p.level];
+            
+            return `<div class="card" style="border-color:${COLORS[p.level]}" onclick="openModal('${role}',${idx})">
+                <div class="card-img" style="background-image:url('https://api.dicebear.com/7.x/avataaars/svg?seed=${p.name}')"></div>
                 <div class="card-lvl">LV ${p.level}</div>
+                <div class="card-up-count">${upText}</div>
                 <div class="card-info"><span class="card-pwr">${s.total}</span><span class="card-name">${p.name}</span></div>
             </div>`;
         };
 
-        document.getElementById('row-pt').innerHTML = draw(squad.pt[0], 'pt', 0, 'PT');
-        document.getElementById('row-df').innerHTML = draw(squad.df[0], 'df', 0, 'DF') + draw(squad.df[1], 'df', 1, 'DF');
-        document.getElementById('row-at').innerHTML = draw(squad.at[0], 'at', 0, 'AT') + draw(squad.at[1], 'at', 1, 'AT');
-        document.getElementById('row-res').innerHTML = draw(squad.res_pt, 'res_pt', null, 'R PT') + draw(squad.res_df, 'res_df', null, 'R DF') + draw(squad.res_at, 'res_at', null, 'R AT');
-        
+        document.getElementById('row-pt').innerHTML = draw(squad.pt[0], 'pt', 0, 'POR');
+        document.getElementById('row-df').innerHTML = draw(squad.df[0], 'df', 0, 'DIF') + draw(squad.df[1], 'df', 1, 'DIF');
+        document.getElementById('row-at').innerHTML = draw(squad.at[0], 'at', 0, 'ATT') + draw(squad.at[1], 'at', 1, 'ATT');
+        document.getElementById('row-res').innerHTML = draw(squad.res_pt, 'res_pt', null, 'R-POR') + draw(squad.res_df, 'res_df', null, 'R-DIF') + draw(squad.res_at, 'res_at', null, 'R-ATT');
         document.getElementById('team-pwr').innerText = totalPwr;
-        document.getElementById('sub-btn').style.display = (squad.pt.length>0 && squad.df.length>1 && squad.at.length>1) ? "block" : "none";
     }
 
-    function clickCard(role, idx) {
-        if(!subMode) {
-            let p = (idx === null) ? squad[role] : squad[role][idx];
-            if(p) openModal(p, role, idx);
+    function openModal(role, idx) {
+        let p = (idx === null) ? squad[role] : squad[role][idx];
+        if(!p) return;
+
+        document.getElementById('modal-detail').style.display = 'flex';
+        document.getElementById('m-name').innerText = p.name;
+        document.getElementById('m-cat').innerText = ["","ESORDIENTE","PROMESSA","FUORICLASSE","CAMPIONE","PALLONE D'ORO"][p.level];
+        document.getElementById('m-cat').style.color = COLORS[p.level];
+
+        updateModalStats(p, role, idx);
+    }
+
+    function updateModalStats(p, role, idx) {
+        let s = getStats(p);
+        document.getElementById('m-total').innerText = s.total;
+        
+        const labels = {vel:"Velocità", tir:"Tiro", dif:"Difesa", pas:"Passaggio", fis:"Fisico"};
+        let html = "";
+        for(let key in labels) {
+            let val = s[key];
+            html += `
+            <div class="stat-row">
+                <span class="stat-label">${labels[key]}</span>
+                <div class="bar-bg"><div class="bar-fill" style="width:${Math.min(val/10, 100)}%"></div></div>
+                <span class="stat-num">${val}</span>
+            </div>`;
+        }
+        document.getElementById('m-stats').innerHTML = html;
+
+        // Costo upgrade proporzionale
+        let upCost = p.level * 200 * (p.upgrades + 1);
+        let btn = document.getElementById('m-upg');
+        
+        if(p.upgrades >= LIMITS[p.level]) {
+            btn.innerText = "LIVELLO MASSIMO";
+            btn.disabled = true;
+            btn.style.background = "#ccc";
         } else {
-            if(!selectedSub) {
-                if(role.startsWith('res')) return;
-                selectedSub = { role, idx };
-            } else {
-                let isMatch = (role === "res_" + selectedSub.role) || ("res_" + role === selectedSub.role);
-                if(isMatch) {
-                    let tit = squad[selectedSub.role][selectedSub.idx];
-                    let ris = (idx === null) ? squad[role] : squad[role][idx];
-                    squad[selectedSub.role][selectedSub.idx] = ris;
-                    if(idx === null) squad[role] = tit; else squad[role][idx] = tit;
-                    save(); toggleSubMode();
-                } else { if(!role.startsWith('res')) selectedSub = { role, idx }; }
-            }
-            renderSquad();
+            btn.innerText = `POTENZIA (${upCost} TAP)`;
+            btn.disabled = false;
+            btn.style.background = "gold";
+            btn.onclick = () => {
+                if(taps >= upCost) {
+                    taps -= upCost;
+                    p.upgrades++;
+                    save(); refresh(); renderSquad();
+                    updateModalStats(p, role, idx);
+                } else { alert("Tap insufficienti!"); }
+            };
         }
     }
 
@@ -223,73 +239,45 @@
         let name = DB[lv][Math.floor(Math.random()*DB[lv].length)];
         let roles = ['pt','df','at'];
         let role = roles[Math.floor(Math.random()*3)];
-        let p = { name, level: lv, upgrades: 0, role, img: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}` };
-        
-        let added = false;
-        if(squad[role].length < (role==='pt'?1:2)) { squad[role].push(p); added = true; }
-        else if(!squad['res_'+role]) { squad['res_'+role] = p; added = true; }
-        
-        if(added) { alert("Trovato: " + name); save(); refresh(); renderSquad(); }
-        else { alert("Slot pieni per questo ruolo!"); taps += 500; }
-    }
+        let p = { name, level: lv, upgrades: 0, role };
 
-    function openModal(p, role, idx) {
-        document.getElementById('modal-detail').style.display = 'flex';
-        document.getElementById('m-name').innerText = p.name;
-        document.getElementById('m-img').src = p.img;
-        document.getElementById('m-cat').innerText = CATS[p.level];
-        document.getElementById('m-cat').style.color = COLORS[p.level];
-        let s = calcStats(p);
-        document.getElementById('m-total').innerText = "POWER: " + s.total;
+        if(squad[role].length < (role==='pt'?1:2)) { squad[role].push(p); }
+        else { squad['res_'+role] = p; }
         
-        let h = "";
-        for(let k in {VEL:s.vel, TIR:s.tir, DIF:s.dif, PAS:s.pas}) {
-            h += `<div class="stat-row"><span>${k}</span><div class="bar-bg"><div class="bar-fill" style="width:${s[k.toLowerCase()]/10}%"></div></div></div>`;
-        }
-        document.getElementById('m-stats').innerHTML = h;
-
-        let cost = p.level * 200;
-        let btn = document.getElementById('m-upg');
-        btn.innerText = p.upgrades >= LIMITS[p.level] ? "MAX" : `POTENZIA (${cost} TAP)`;
-        btn.onclick = () => {
-            if(taps >= cost && p.upgrades < LIMITS[p.level]) {
-                taps -= cost; p.upgrades++; save(); refresh(); openModal(p, role, idx); renderSquad();
-            }
-        };
+        save(); refresh(); renderSquad();
+        alert("Hai trovato: " + name + " (Liv. " + lv + ")");
     }
 
     function generateOpp() {
         if(currentOpp) return;
-        const names = ["Real Madrid", "FC Barcelona", "Manchester City", "Juventus", "Milan"];
-        let pwr = 500 + Math.floor(Math.random() * 2000);
-        currentOpp = { name: names[Math.floor(Math.random()*names.length)], pwr };
+        let pwr = 800 + Math.floor(Math.random() * 3000);
+        currentOpp = { name: "Team " + ["Aliens", "Robots", "Dragons", "Monsters"][Math.floor(Math.random()*4)], pwr };
         document.getElementById('opp-name').innerText = currentOpp.name;
         document.getElementById('opp-pwr').innerText = "Potenza: " + pwr;
     }
 
-    function checkStadio() {
-        let isReady = (squad.pt.length>0 && squad.df.length>1 && squad.at.length>1);
-        document.getElementById('match-btn').disabled = !isReady;
-    }
-
     function startMatch() {
+        let myPwr = parseInt(document.getElementById('team-pwr').innerText);
+        if(myPwr === 0) return alert("Crea una squadra!");
         let log = document.getElementById('match-log');
-        log.innerHTML = "Partita iniziata...<br>";
-        let myPwr = [...squad.pt, ...squad.df, ...squad.at].reduce((a,b) => a + calcStats(b).total, 0);
+        log.innerHTML = "Inizio partita...";
         setTimeout(() => {
             let win = Math.random() < (myPwr / (myPwr + currentOpp.pwr));
             if(win) {
-                taps += 5000; log.innerHTML += "<span style='color:gold'>VITTORIA! +5000 Tap</span>";
-            } else { log.innerHTML += "<span style='color:red'>SCONFITTA...</span>"; }
-            currentOpp = null; refresh(); save();
-        }, 1500);
+                taps += 10000;
+                log.innerHTML += "<br><span style='color:gold'>VITTORIA! +10.000 TAP</span>";
+            } else {
+                log.innerHTML += "<br><span style='color:red'>SCONFITTA...</span>";
+            }
+            currentOpp = null; save(); refresh();
+        }, 1000);
     }
 
-    function toggleSubMode() { subMode = !subMode; selectedSub = null; renderSquad(); }
     function closeModal() { document.getElementById('modal-detail').style.display = 'none'; }
-    function clearAll() { if(confirm("Vuoi cancellare tutto e ripartire da 2 milioni?")) { localStorage.clear(); location.reload(); } }
+    function clearAll() { localStorage.clear(); location.reload(); }
 
     refresh();
+    move('campo');
 </script>
 </body>
 </html>
