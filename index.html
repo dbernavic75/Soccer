@@ -11,69 +11,61 @@
         }
         body { margin: 0; background: #1a472a; color: white; font-family: 'Arial Black', sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        #header { padding: 8px; background: #000; border-bottom: 2px solid var(--gold); display: flex; justify-content: space-between; align-items: center; z-index: 500; }
+        #header { padding: 8px; background: #000; border-bottom: 2px solid var(--gold); display: flex; justify-content: space-between; align-items: center; z-index: 1000; }
         .header-stat { text-align: center; flex: 1; }
         .stat-val { font-size: 18px; color: var(--gold); display: block; }
         .stat-lab { font-size: 8px; text-transform: uppercase; color: #aaa; }
         #reset-btn { background: #ff4444; border: none; color: white; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer; }
 
-        /* Aree di gioco */
-        .screen { display: none; position: fixed; top: 50px; left: 0; width: 100%; height: calc(100% - 110px); box-sizing: border-box; overflow-y: auto; }
-        
-        #game-area { display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #2e7d32 0%, #1a472a 100%); }
-        #ball { width: 140px; cursor: pointer; transition: 0.1s; -webkit-tap-highlight-color: transparent; }
+        /* AREA CAMPO (TAP) */
+        #game-area { flex: 1; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #2e7d32 0%, #1a472a 100%); }
+        #ball { width: 140px; cursor: pointer; transition: 0.1s; -webkit-tap-highlight-color: transparent; z-index: 10; }
         #ball:active { transform: scale(0.8); }
 
-        #squad-screen { background: #0f2b1a; padding: 5px; z-index: 100; }
+        /* SCHERMATE SOVRAPPOSTE */
+        .screen-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f2b1a; z-index: 500; padding: 60px 5px 100px 5px; box-sizing: border-box; overflow-y: auto; }
         
-        /* Stadio / Partita */
-        #match-screen { background: #0a1f13; padding: 15px; text-align: center; }
+        /* STADIO */
+        #match-screen { background: #0a1f13; text-align: center; }
         .opponent-card { background: rgba(0,0,0,0.5); border: 2px solid var(--gold); border-radius: 15px; padding: 20px; margin-top: 20px; }
         
         #match-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 3000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
         #match-log { background: #111; width: 100%; height: 150px; overflow-y: hidden; border: 1px solid #333; padding: 10px; font-family: monospace; color: #0f0; margin: 15px 0; border-radius: 8px; font-size: 11px; text-align: left; }
         .score-board { font-size: 40px; display: flex; gap: 20px; align-items: center; margin-bottom: 10px; }
 
+        /* REGOLE SQUADRA ORIGINALI */
         .section-title { text-align: center; color: var(--gold); font-size: 10px; margin: 10px 0 5px 0; border-bottom: 1px solid rgba(255,215,0,0.3); }
         .row { display: flex; justify-content: center; gap: 5px; margin-bottom: 5px; min-height: 120px; }
-        
         .player-slot { width: 80px; height: 120px; border-radius: 6px; position: relative; background: #222; border: 2px solid #333; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: 0.2s; }
         .empty-label { margin: auto; font-size: 8px; color: #555; text-align: center; text-transform: uppercase; }
-        
         .card-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0.6; z-index: 1; }
         .card-overlay { position: absolute; bottom: 0; left: 0; width: 100%; height: 60%; background: linear-gradient(to top, black 20%, transparent 100%); z-index: 2; }
         .card-header { position: absolute; top: 2px; width: 100%; display: flex; justify-content: space-between; padding: 0 4px; z-index: 3; box-sizing: border-box; }
         .tag-lvl { background: rgba(0,0,0,0.8); color: white; padding: 1px 3px; border-radius: 2px; font-size: 7px; }
         .tag-upg { background: var(--gold); color: black; padding: 1px 3px; border-radius: 2px; font-size: 7px; font-weight: bold; }
-        
         .card-info { position: absolute; bottom: 4px; width: 100%; text-align: center; z-index: 3; }
         .card-role-tag { font-size: 6px; color: #aaa; text-transform: uppercase; display: block; }
         .card-pwr { font-size: 14px; color: var(--gold); display: block; line-height: 1; }
         .card-name { font-size: 6px; text-transform: uppercase; color: #fff; white-space: nowrap; }
 
+        /* UI GENERALE */
         .btn-ui { border: none; font-weight: bold; border-radius: 8px; padding: 12px; cursor: pointer; width: 100%; margin-top: 10px; font-family: 'Arial Black', sans-serif; text-transform: uppercase; }
         .btn-ui:disabled { background: #444 !important; color: #888; cursor: not-allowed; }
 
-        #pack-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; flex-direction: column; }
-        .anim-card { width: 140px; height: 210px; border: 6px solid white; border-radius: 12px; background: #222; display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 60px; }
-        .spinning { animation: spin 0.2s infinite linear; }
-        @keyframes spin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
-
-        @keyframes vibrate {
-            0% { transform: translate(0); }
-            25% { transform: translate(1px, 1px) rotate(0.5deg); }
-            50% { transform: translate(-1px, -1px) rotate(-0.5deg); }
-            100% { transform: translate(0); }
-        }
-        .vibrating { animation: vibrate 0.2s infinite; border: 2px solid white !important; }
-        .target-sub { animation: vibrate 0.1s infinite; border: 2px solid var(--gold) !important; box-shadow: 0 0 15px var(--gold); }
-
-        #navbar { display: flex; background: #000; padding: 12px 0; border-top: 2px solid var(--gold); position: fixed; bottom: 0; width: 100%; z-index: 500; }
+        #navbar { display: flex; background: #000; padding: 12px 0; border-top: 2px solid var(--gold); position: fixed; bottom: 0; width: 100%; z-index: 2000; }
         .nav-item { flex: 1; text-align: center; font-size: 11px; color: #666; cursor: pointer; font-weight: bold; }
         .nav-item.active { color: var(--gold); }
 
-        #details-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
-        .modal-content { background: #fff; color: #000; border-radius: 15px; padding: 20px; width: 100%; max-width: 300px; position: relative; }
+        /* MODALI */
+        #pack-overlay, #details-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 5000; align-items: center; justify-content: center; flex-direction: column; }
+        .anim-card { width: 140px; height: 210px; border: 6px solid white; border-radius: 12px; background: #222; display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 60px; }
+        .spinning { animation: spin 0.2s infinite linear; }
+        @keyframes spin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
+        @keyframes vibrate { 0% { transform: translate(0); } 25% { transform: translate(1px, 1px) rotate(0.5deg); } 50% { transform: translate(-1px, -1px) rotate(-0.5deg); } 100% { transform: translate(0); } }
+        .vibrating { animation: vibrate 0.2s infinite; border: 2px solid white !important; }
+        .target-sub { animation: vibrate 0.1s infinite; border: 2px solid var(--gold) !important; box-shadow: 0 0 15px var(--gold); }
+
+        .modal-content { background: #fff; color: #000; border-radius: 15px; padding: 20px; width: 90%; max-width: 300px; position: relative; }
         .stat-row { display: flex; align-items: center; gap: 5px; margin: 4px 0; font-size: 10px; }
         .stat-bar-bg { flex: 1; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
         .stat-bar-fill { height: 100%; background: #1a472a; }
@@ -86,11 +78,11 @@
     <div class="header-stat"><span class="stat-lab">I tuoi Tap</span><span id="tap-count" class="stat-val">0</span></div>
 </div>
 
-<div id="game-area" class="screen" style="display: flex;">
+<div id="game-area">
     <img src="https://upload.wikimedia.org/wikipedia/commons/d/d3/Soccerball.svg" id="ball" onclick="doTap()">
 </div>
 
-<div id="squad-screen" class="screen">
+<div id="squad-screen" class="screen-overlay">
     <div id="shop-area" style="text-align: center;"></div>
     <div class="section-title">TITOLARI</div>
     <div id="row-pt" class="row"></div>
@@ -101,26 +93,22 @@
     <button id="sub-mode-btn" class="btn-ui" style="background: #3498db; color: white; display: none;" onclick="toggleSubMode()">MODALITÀ SOSTITUZIONE</button>
 </div>
 
-<div id="match-screen" class="screen">
-    <h2 style="color: var(--gold);">STADIO ELITE</h2>
+<div id="match-screen" class="screen-overlay">
+    <h2 style="color: var(--gold); text-align: center;">STADIO ELITE</h2>
     <div class="opponent-card">
-        <p style="font-size: 10px; color: #aaa;">AVVERSARIO DISPONIBILE:</p>
+        <p style="font-size: 10px; color: #aaa;">SFIDA DISPONIBILE:</p>
         <h1 id="opp-name">---</h1>
         <p id="opp-power-label">Potenza: ---</p>
         <p style="color: var(--gold); font-size: 12px;">Premio Vittoria: <span id="match-prize">0</span> Tap</p>
         <button id="start-match-btn" class="btn-ui" style="background: var(--gold); color: black;" onclick="startMatch()">GIOCA PARTITA</button>
-        <p id="match-error" style="color: #ff4444; font-size: 9px; margin-top: 10px; display: none;">Ti servono almeno 5 titolari!</p>
+        <p id="match-error" style="color: #ff4444; font-size: 9px; margin-top: 10px; display: none;">Ti servono 5 titolari!</p>
     </div>
 </div>
 
-<div id="match-overlay">
-    <div class="score-board">
-        <div style="text-align:center"><small style="font-size:10px; display:block">TU</small><span id="score-home">0</span></div>
-        <div>-</div>
-        <div style="text-align:center"><small style="font-size:10px; display:block">AVV</small><span id="score-away">0</span></div>
-    </div>
-    <div id="match-log"></div>
-    <button id="close-match-btn" class="btn-ui" style="display:none; background:white; color:black;" onclick="closeMatch()">RITORNA</button>
+<div id="navbar">
+    <div class="nav-item active" id="nav-campo" onclick="nav('campo')">CAMPO</div>
+    <div class="nav-item" id="nav-squadra" onclick="nav('squadra')">SQUADRA</div>
+    <div class="nav-item" id="nav-stadio" onclick="nav('stadio')">STADIO</div>
 </div>
 
 <div id="pack-overlay">
@@ -143,153 +131,115 @@
     </div>
 </div>
 
-<div id="navbar">
-    <div class="nav-item active" id="nav-campo" onclick="showGame()">CAMPO</div>
-    <div class="nav-item" id="nav-squadra" onclick="toggleSquad()">SQUADRA</div>
-    <div class="nav-item" id="nav-stadio" onclick="showStadio()">STADIO</div>
+<div id="match-overlay">
+    <div class="score-board">
+        <div style="text-align:center"><small style="font-size:10px; display:block">TU</small><span id="score-home">0</span></div>
+        <div>-</div>
+        <div style="text-align:center"><small style="font-size:10px; display:block">AVV</small><span id="score-away">0</span></div>
+    </div>
+    <div id="match-log"></div>
+    <button id="close-match-btn" class="btn-ui" style="display:none; background:white; color:black;" onclick="closeMatch()">RITORNA</button>
 </div>
 
 <script>
-    // --- DATABASE GIOCO ---
+    // --- DATABASE ---
     const DB_REAL = {
         5: ["Lio Pulce Messi", "Cristiano Ronalda", "Marco Van Bastone", "Lothar Mattonaus", "George Bestia"],
         4: ["Kylian Mbappappé", "Erling Aland", "Luka Modriccia", "Karim Benzemulo", "Neymar Jrre"],
         3: ["Ciro Immobile fermo", "Gigio Paperumma", "Theo Ernannde", "Dusan Vlahoviccia", "Nicolò Barellino"]
     };
-
     function genNames(c) {
-        const n = ["Berto", "Ugo", "Ciro", "Lino", "Pino", "Gino", "Vito", "Mimo", "Tano", "Beppe"];
-        const s = ["Scivolone", "Pedalino", "Frenato", "Rincorsa", "Zoppetto", "Tirolo", "Palo", "Traversa"];
-        let l = []; for(let i=0; i<c; i++) l.push(n[Math.floor(Math.random()*n.length)]+" "+s[Math.floor(Math.random()*s.length)]);
-        return l;
+        const n=["Berto","Ugo","Ciro","Lino","Pino","Gino","Vito","Mimo","Tano","Beppe"], s=["Scivolone","Pedalino","Frenato","Rincorsa","Zoppetto","Tirolo","Palo","Traversa"];
+        let l=[]; for(let i=0;i<c;i++) l.push(n[Math.floor(Math.random()*n.length)]+" "+s[Math.floor(Math.random()*s.length)]); return l;
     }
+    const POOL = { 5:DB_REAL[5], 4:DB_REAL[4], 3:DB_REAL[3], 2:genNames(40), 1:genNames(50) };
+    const COLORS = ["","#95a5a6","#2ecc71","#3498db","#9b59b6","#f1c40f"], CATS = ["","ESORDIENTE","PROMESSA","FUORICLASSE","CAMPIONE","PALLONE D'ORO"];
+    const LIMITS = [0,30,25,20,15,10], BASE = [0,40,60,90,150,250], VALS = [0,2,4,8,15,30];
 
-    const POOL = { 5: DB_REAL[5], 4: DB_REAL[4], 3: DB_REAL[3], 2: genNames(40), 1: genNames(50) };
-    const COLORS = ["", "#95a5a6", "#2ecc71", "#3498db", "#9b59b6", "#f1c40f"];
-    const CATS = ["", "ESORDIENTE", "PROMESSA", "FUORICLASSE", "CAMPIONE", "PALLONE D'ORO"];
-    const LIMITS = [0, 30, 25, 20, 15, 10];
-    const BASE = [0, 40, 60, 90, 150, 250];
-    const VALS = [0, 2, 4, 8, 15, 30];
-
-    // --- SALVATAGGIO ---
+    // --- STATO GIOCO ---
     const SAVE_KEY = "soccer_save_v30";
-    let taps = 2000000;
-    let squad = { pt: [], df: [], at: [], res_pt: null, res_df: null, res_at: null };
-    let isSubMode = false;
-    let selectedSub = null;
-    let currentOpponent = null;
+    let taps = 2000000, squad = { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null }, isSubMode = false, selectedSub = null, currentOpponent = null;
 
-    function initGame() {
-        try {
-            let data = localStorage.getItem(SAVE_KEY);
-            if (data) {
-                let p = JSON.parse(data);
-                if (typeof p.taps === 'number' && !isNaN(p.taps)) taps = p.taps;
-                if (p.squad) {
-                    squad.pt = Array.isArray(p.squad.pt) ? p.squad.pt : [];
-                    squad.df = Array.isArray(p.squad.df) ? p.squad.df : [];
-                    squad.at = Array.isArray(p.squad.at) ? p.squad.at : [];
-                    squad.res_pt = p.squad.res_pt || null;
-                    squad.res_df = p.squad.res_df || null;
-                    squad.res_at = p.squad.res_at || null;
-                }
-            }
-        } catch(e) {}
-        updateUI();
-        renderSquad();
-        generateOpponent();
+    function init() {
+        let d = localStorage.getItem(SAVE_KEY);
+        if(d) {
+            let p = JSON.parse(d);
+            taps = p.taps || 0;
+            if(p.squad) squad = p.squad;
+        }
+        updateUI(); renderSquad(); generateOpponent();
     }
-
-    function saveGame() {
-        localStorage.setItem(SAVE_KEY, JSON.stringify({ taps: taps, squad: squad }));
-    }
-
-    function doTap() { taps++; updateUI(); saveGame(); }
+    function save() { localStorage.setItem(SAVE_KEY, JSON.stringify({taps, squad})); }
+    function doTap() { taps++; updateUI(); save(); }
     function updateUI() { document.getElementById('tap-count').innerText = taps.toLocaleString('it-IT'); }
 
-    function getRoleName(r) {
-        if(r.includes("PT")) return "Portiere";
-        if(r.includes("DF")) return "Difensore";
-        return "Attaccante";
-    }
-
-    function calcStats(p) {
-        if(!p) return {total:0};
-        const isPT = p.role.includes("PT");
-        const b = BASE[p.level], u = p.upgrades * VALS[p.level], bonus = Math.round(u * 0.4);
-        let s = isPT ? { VEL:b+u, PAS:b+u, DEF:Math.round((b+u)*1.5), RIF:Math.round((b+u)*1.5) } : { VEL:b+u, SHO:b+u, PAS:b+u, DEF:b+u, DRI:b+u };
-        const keys = Object.keys(s);
-        s[keys[p.bias % keys.length]] += bonus;
-        s[keys[(p.bias + 1) % keys.length]] -= bonus;
-        let t = 0; for(let k in s) t += s[k];
-        return { ...s, total: t };
-    }
-
     // --- NAVIGAZIONE ---
-    function hideAll() {
-        document.getElementById('game-area').style.display = 'none';
+    function nav(target) {
         document.getElementById('squad-screen').style.display = 'none';
         document.getElementById('match-screen').style.display = 'none';
-        document.getElementById('nav-campo').classList.remove('active');
-        document.getElementById('nav-squadra').classList.remove('active');
-        document.getElementById('nav-stadio').classList.remove('active');
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+
+        if(target === 'squadra') {
+            document.getElementById('squad-screen').style.display = 'block';
+            document.getElementById('nav-squadra').classList.add('active');
+            renderSquad();
+        } else if(target === 'stadio') {
+            document.getElementById('match-screen').style.display = 'block';
+            document.getElementById('nav-stadio').classList.add('active');
+            checkMatchReady();
+        } else {
+            document.getElementById('nav-campo').classList.add('active');
+        }
     }
 
-    function showGame() { hideAll(); document.getElementById('game-area').style.display = 'flex'; document.getElementById('nav-campo').classList.add('active'); }
-    function toggleSquad() { hideAll(); document.getElementById('squad-screen').style.display = 'block'; document.getElementById('nav-squadra').classList.add('active'); renderSquad(); }
-    function showStadio() { 
-        hideAll(); 
-        document.getElementById('match-screen').style.display = 'block'; 
-        document.getElementById('nav-stadio').classList.add('active'); 
-        
-        const isReady = (squad.pt.length >= 1 && squad.df.length >= 2 && squad.at.length >= 2);
-        document.getElementById('start-match-btn').disabled = !isReady;
-        document.getElementById('match-error').style.display = isReady ? 'none' : 'block';
+    // --- LOGICA SQUADRA ORIGINALE ---
+    function calcStats(p) {
+        if(!p) return {total:0};
+        const isPT = p.role.includes("PT"), b = BASE[p.level], u = p.upgrades * VALS[p.level], bonus = Math.round(u * 0.4);
+        let s = isPT ? { VEL:b+u, PAS:b+u, DEF:Math.round((b+u)*1.5), RIF:Math.round((b+u)*1.5) } : { VEL:b+u, SHO:b+u, PAS:b+u, DEF:b+u, DRI:b+u };
+        const keys = Object.keys(s); s[keys[p.bias % keys.length]] += bonus; s[keys[(p.bias + 1) % keys.length]] -= bonus;
+        let t = 0; for(let k in s) t += s[k]; return { ...s, total: t };
     }
 
-    // --- LOGICA SQUADRA (Invariata) ---
     function renderSquad() {
-        const isFull = (squad.pt.length >= 1 && squad.df.length >= 2 && squad.at.length >= 2 && squad.res_pt && squad.res_df && squad.res_at);
-        const draw = (p, roleKey, idx, defaultRole) => {
+        const isFull = (squad.pt.length>=1 && squad.df.length>=2 && squad.at.length>=2 && squad.res_pt && squad.res_df && squad.res_at);
+        const draw = (p, roleKey, idx, def) => {
             let stateClass = "";
             if(isSubMode) {
                 if(!selectedSub && !roleKey.startsWith('res')) stateClass = "vibrating";
                 if(selectedSub && roleKey === selectedSub.role && idx === selectedSub.idx) stateClass = "vibrating";
                 if(selectedSub && (roleKey === "res_" + selectedSub.role || "res_"+roleKey === selectedSub.role)) stateClass = "target-sub";
             }
-            if(!p) return `<div class="player-slot"><div class="empty-label">${getRoleName(defaultRole)}</div></div>`;
+            if(!p) return `<div class="player-slot"><div class="empty-label">${def}</div></div>`;
             const s = calcStats(p);
             return `<div class="player-slot ${stateClass}" style="border-color:${COLORS[p.level]}" onclick="handleCard('${roleKey}', ${idx})">
                 <div class="card-bg" style="background-image:url('${p.img}')"></div><div class="card-overlay"></div>
                 <div class="card-header"><span class="tag-lvl">LV ${p.level}</span><span class="tag-upg">${p.upgrades >= LIMITS[p.level] ? 'MAX' : p.upgrades}</span></div>
-                <div class="card-info"><span class="card-role-tag">${getRoleName(p.role)}</span><span class="card-pwr">${s.total}</span><span class="card-name">${p.name}</span></div>
+                <div class="card-info"><span class="card-role-tag">${p.role}</span><span class="card-pwr">${s.total}</span><span class="card-name">${p.name}</span></div>
             </div>`;
         };
         document.getElementById('row-pt').innerHTML = draw(squad.pt[0], 'pt', 0, 'PT');
         document.getElementById('row-df').innerHTML = draw(squad.df[0], 'df', 0, 'DF') + draw(squad.df[1], 'df', 1, 'DF');
         document.getElementById('row-at').innerHTML = draw(squad.at[0], 'at', 0, 'AT') + draw(squad.at[1], 'at', 1, 'AT');
-        document.getElementById('row-res').innerHTML = draw(squad.res_pt, 'res_pt', null, 'PT') + draw(squad.res_df, 'res_df', null, 'DF') + draw(squad.res_at, 'res_at', null, 'AT');
-        let btnText = isFull ? "SQUADRA COMPLETA" : "PACCHETTO (300 TAP)";
-        document.getElementById('shop-area').innerHTML = `<button class="btn-ui" onclick="buyPack()" style="background:var(--gold); margin-bottom:15px; width:280px;" ${taps < 300 || isFull ? 'disabled' : ''}>${btnText}</button>`;
+        document.getElementById('row-res').innerHTML = draw(squad.res_pt, 'res_pt', null, 'RIS PT') + draw(squad.res_df, 'res_df', null, 'RIS DF') + draw(squad.res_at, 'res_at', null, 'RIS AT');
+        
+        let bTxt = isFull ? "SQUADRA COMPLETA" : "PACCHETTO (300 TAP)";
+        document.getElementById('shop-area').innerHTML = `<button class="btn-ui" onclick="buyPack()" style="background:var(--gold); margin-bottom:15px; width:280px;" ${taps<300||isFull?'disabled':''}>${bTxt}</button>`;
         document.getElementById('sub-mode-btn').style.display = (squad.pt.length>=1 && squad.df.length>=2 && squad.at.length>=2) ? "block" : "none";
     }
 
     function buyPack() {
         if(taps < 300) return;
-        taps -= 300; updateUI(); saveGame();
-        const ov = document.getElementById('pack-overlay');
-        const anim = document.getElementById('anim-card');
-        ov.style.display = 'flex';
-        anim.classList.add('spinning');
-        anim.innerHTML = "?"; anim.style.borderColor = "white";
+        taps -= 300; updateUI(); save();
+        const ov = document.getElementById('pack-overlay'); const anim = document.getElementById('anim-card');
+        ov.style.display = 'flex'; anim.classList.add('spinning'); anim.innerHTML = "?"; anim.style.borderColor = "white";
         document.getElementById('pack-res').innerText = "";
         setTimeout(() => {
             anim.classList.remove('spinning');
-            const r = Math.random();
-            let lv = r<0.02?5 : r<0.08?4 : r<0.2?3 : r<0.5?2 : 1;
+            const r = Math.random(); let lv = r<0.02?5 : r<0.08?4 : r<0.2?3 : r<0.5?2 : 1;
             const name = POOL[lv][Math.floor(Math.random()*POOL[lv].length)];
-            const allInSquad = [...squad.pt, ...squad.df, ...squad.at, squad.res_pt, squad.res_df, squad.res_at].filter(x => x);
-            if(allInSquad.some(p => p.name === name)) {
+            const all = [...squad.pt, ...squad.df, ...squad.at, squad.res_pt, squad.res_df, squad.res_at].filter(x => x);
+            if(all.some(p => p.name === name)) {
                 anim.innerHTML = "❌"; document.getElementById('pack-res').innerText = "DOPPIONE!";
             } else {
                 const role = ['PT','DF','AT'][Math.floor(Math.random()*3)];
@@ -298,10 +248,8 @@
                 if(squad[k].length < (k==='pt'?1:2)) { squad[k].push(p); ok = true; }
                 else if(!squad['res_'+k]) { squad['res_'+k] = p; ok = true; }
                 if(ok) {
-                    anim.innerHTML = `<img src="${p.img}" width="100%">`;
-                    anim.style.borderColor = COLORS[lv];
-                    document.getElementById('pack-res').innerText = name.toUpperCase();
-                    saveGame(); renderSquad();
+                    anim.innerHTML = `<img src="${p.img}" width="100%">`; anim.style.borderColor = COLORS[lv];
+                    document.getElementById('pack-res').innerText = name.toUpperCase(); save(); renderSquad();
                 } else { anim.innerHTML = "🚫"; document.getElementById('pack-res').innerText = "SLOT PIENI!"; }
             }
             document.getElementById('close-pack').style.display = "block";
@@ -309,17 +257,21 @@
     }
 
     function handleCard(role, idx) {
-        if(!isSubMode) { 
-            let p = (idx === null) ? squad[role] : squad[role][idx];
-            if(p) openDetails(role, idx); 
-            return; 
-        }
-        if(!selectedSub) {
-            if(role.startsWith('res')) return; 
-            selectedSub = { role, idx };
-        } else {
+        if(!isSubMode) { let p = (idx === null) ? squad[role] : squad[role][idx]; if(p) openDetails(role, idx); return; }
+        if(!selectedSub) { if(role.startsWith('res')) return; selectedSub = { role, idx }; }
+        else {
             const isMatch = (role === "res_" + selectedSub.role) || ("res_" + role === selectedSub.role);
             if(isMatch) {
-                let titolare = squad[selectedSub.role][selectedSub.idx];
-                let riserva = (idx === null) ? squad[role] : squad[role][idx];
-                squad[selectedSub.r
+                let titolare = squad[selectedSub.role][selectedSub.idx], riserva = (idx === null) ? squad[role] : squad[role][idx];
+                squad[selectedSub.role][selectedSub.idx] = riserva; if(idx === null) squad[role] = titolare; else squad[role][idx] = titolare;
+                save(); toggleSubMode();
+            } else { if(!role.startsWith('res')) selectedSub = { role, idx }; }
+        }
+        renderSquad();
+    }
+
+    function toggleSubMode() { 
+        isSubMode = !isSubMode; selectedSub = null; 
+        const btn = document.getElementById('sub-mode-btn');
+        btn.innerText = isSubMode ? "ANNULLA" : "MODALITÀ SOSTITUZIONE
+    
