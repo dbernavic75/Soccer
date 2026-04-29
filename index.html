@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Soccer Stars - Pro Manager</title>
+    <title>Soccer Stars - Elite Manager</title>
     <style>
         :root {
             --gold: #ffd700;
@@ -21,7 +21,7 @@
         #ball { width: 120px; cursor: pointer; transition: 0.1s; -webkit-tap-highlight-color: transparent; }
         #ball:active { transform: scale(0.8); }
 
-        /* PACK ANIMATION */
+        /* PACK ANIMATION GACHA STYLE */
         #pack-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; align-items: center; justify-content: center; flex-direction: column; }
         .anim-card { width: 140px; height: 210px; border: 6px solid white; border-radius: 12px; background: #222; display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 80px; }
         .spinning { animation: spin 0.2s infinite linear, colorShift 0.2s infinite linear; }
@@ -32,6 +32,7 @@
             100% { border-color: var(--rarity-5); }
         }
 
+        /* VIBRAZIONE */
         @keyframes vibrate {
             0% { transform: translate(0); }
             25% { transform: translate(1px, 1px) rotate(0.5deg); }
@@ -45,7 +46,7 @@
         .section-title { text-align: center; color: var(--gold); font-size: 10px; margin: 10px 0 5px 0; border-bottom: 1px solid rgba(255,215,0,0.3); }
         .row { display: flex; justify-content: center; gap: 5px; margin-bottom: 5px; min-height: 120px; }
         
-        .player-slot { width: 80px; height: 120px; border-radius: 6px; position: relative; background: #222; border: 2px solid #333; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; }
+        .player-slot { width: 80px; height: 120px; border-radius: 6px; position: relative; background: #222; border: 2px solid #333; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: 0.2s; }
         .empty-label { margin: auto; font-size: 8px; color: #555; text-align: center; text-transform: uppercase; }
         
         .card-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0.6; z-index: 1; }
@@ -91,7 +92,7 @@
     <div class="row" id="row-at"></div>
     <div class="section-title">RISERVE</div>
     <div class="row" id="row-res"></div>
-    <button id="sub-mode-btn" class="btn-ui" style="background: #3498db; color: white;" onclick="toggleSubMode()">MODALITÀ SOSTITUZIONE</button>
+    <button id="sub-mode-btn" class="btn-ui" style="background: #3498db; color: white; display: none;" onclick="toggleSubMode()">MODALITÀ SOSTITUZIONE</button>
 </div>
 
 <div id="pack-overlay">
@@ -142,14 +143,14 @@
     const VALS = [0, 2, 4, 8, 15, 30];
 
     // --- STATO GIOCO ---
-    let taps = localStorage.getItem('taps_v15') ? parseInt(localStorage.getItem('taps_v15')) : 2000000;
-    let squad = JSON.parse(localStorage.getItem('squad_v15')) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
+    let taps = localStorage.getItem('taps_final_v16') ? parseInt(localStorage.getItem('taps_final_v16')) : 2000000;
+    let squad = JSON.parse(localStorage.getItem('squad_final_v16')) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
     let isSubMode = false;
     let selectedSub = null;
 
     function save() {
-        localStorage.setItem('taps_v15', taps);
-        localStorage.setItem('squad_v15', JSON.stringify(squad));
+        localStorage.setItem('taps_final_v16', taps);
+        localStorage.setItem('squad_final_v16', JSON.stringify(squad));
     }
 
     function doTap() { taps++; updateUI(); save(); }
@@ -173,15 +174,17 @@
     }
 
     function renderSquad() {
+        const isFull = (squad.pt.length >= 1 && squad.df.length >= 2 && squad.at.length >= 2 && squad.res_pt && squad.res_df && squad.res_at);
+
         const draw = (p, roleKey, idx, defaultRole) => {
             let stateClass = "";
             if(isSubMode) {
-                if(!selectedSub && p) stateClass = "vibrating";
+                if(!selectedSub) stateClass = "vibrating";
                 if(selectedSub && roleKey === selectedSub.role && idx === selectedSub.idx) stateClass = "vibrating";
                 if(selectedSub && (roleKey === "res_" + selectedSub.role || "res_"+roleKey === selectedSub.role)) stateClass = "target-sub";
             }
 
-            if(!p) return `<div class="player-slot ${stateClass}" onclick="handleCard('${roleKey}', ${idx})"><div class="empty-label">${getRoleName(defaultRole)}</div></div>`;
+            if(!p) return `<div class="player-slot"><div class="empty-label">${getRoleName(defaultRole)}</div></div>`;
             
             const s = calcStats(p);
             return `<div class="player-slot ${stateClass}" style="border-color:${COLORS[p.level]}" onclick="handleCard('${roleKey}', ${idx})">
@@ -200,8 +203,17 @@
         document.getElementById('row-at').innerHTML = draw(squad.at[0], 'at', 0, 'AT') + draw(squad.at[1], 'at', 1, 'AT');
         document.getElementById('row-res').innerHTML = draw(squad.res_pt, 'res_pt', null, 'PT') + draw(squad.res_df, 'res_df', null, 'DF') + draw(squad.res_at, 'res_at', null, 'AT');
         
-        const full = (squad.pt.length >= 1 && squad.df.length >= 2 && squad.at.length >= 2 && squad.res_pt && squad.res_df && squad.res_at);
-        document.getElementById('shop-area').innerHTML = `<button class="btn-ui" onclick="buyPack()" style="background:var(--gold); margin-bottom:10px;" ${taps<300||full?'disabled':''}>${full?'SQUADRA COMPLETA':'PACCHETTO (300 TAP)'}</button>`;
+        // Pulsanti Shop
+        document.getElementById('shop-area').innerHTML = `<button class="btn-ui" onclick="buyPack()" style="background:var(--gold); margin-bottom:10px;" ${taps<300||isFull?'disabled':''}>${isFull?'SQUADRA COMPLETA':'PACCHETTO (300 TAP)'}</button>`;
+        
+        // Visibilità pulsante sostituzione: solo se squadra completa
+        const subBtn = document.getElementById('sub-mode-btn');
+        if (isFull) {
+            subBtn.style.display = "block";
+        } else {
+            subBtn.style.display = "none";
+            isSubMode = false;
+        }
     }
 
     function handleCard(role, idx) {
@@ -211,24 +223,25 @@
             return; 
         }
 
+        // In modalità sostituzione
         if(!selectedSub) {
-            let p = (idx === null) ? squad[role] : squad[role][idx];
-            if(!p || role.startsWith('res')) return; // Inizia selezionando un titolare esistente
+            if(role.startsWith('res')) return; // Inizia scegliendo un titolare
             selectedSub = { role, idx };
         } else {
-            // Verifica se il target è la riserva corretta del titolare selezionato o viceversa
+            // Controlla se il tocco è sulla riserva del ruolo corrispondente o viceversa
             const isMatch = (role === "res_" + selectedSub.role) || ("res_" + role === selectedSub.role);
             if(isMatch) {
                 let titolare = squad[selectedSub.role][selectedSub.idx];
                 let riserva = (idx === null) ? squad[role] : squad[role][idx];
                 
-                // Scambio (anche se uno è null/vuoto)
+                // Scambio dati
                 squad[selectedSub.role][selectedSub.idx] = riserva;
                 if(idx === null) squad[role] = titolare; else squad[role][idx] = titolare;
                 
-                save(); toggleSubMode();
+                save(); 
+                toggleSubMode();
             } else {
-                // Se tocca un altro titolare, cambia selezione
+                // Cambia selezione titolare
                 if(!role.startsWith('res')) selectedSub = { role, idx };
             }
         }
