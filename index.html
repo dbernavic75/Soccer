@@ -48,7 +48,7 @@
         .modal-box { background: white; color: black; border-radius: 15px; padding: 20px; width: 100%; max-width: 320px; position: relative; }
         .stat-row { display: flex; align-items: center; justify-content: space-between; margin: 6px 0; font-size: 11px; font-weight: bold; }
         .bar-bg { flex: 1; height: 10px; background: #eee; border-radius: 5px; margin: 0 8px; overflow: hidden; }
-        .bar-fill { height: 100%; background: #2ecc71; transition: width 0.2s; }
+        .bar-fill { height: 100%; transition: width 0.3s; }
         .modal-player-img { width: 80px; height: 80px; margin: 5px auto; display: block; border-radius: 50%; background: #eee; border: 3px solid gold; }
         .modal-role { text-align: center; font-size: 10px; color: #666; font-weight: bold; text-transform: uppercase; }
 
@@ -125,7 +125,7 @@
 
 <div id="nav">
     <div class="nav-item active" onclick="move('campo', this)">CAMPO</div>
-    <div class="nav-item" onclick="move('squadra', this)">SQUADRA</div>
+    <div class="nav-item" onclick="onclick="move('squadra', this)">SQUADRA</div>
     <div class="nav-item" onclick="move('stadio', this)">STADIO</div>
 </div>
 
@@ -142,25 +142,13 @@
     const LIMITS = [0, 30, 25, 20, 15, 10];
     const BASE_VALUES = [0, 30, 50, 70, 120, 200];
 
-    // VALORE INIZIALE IMPOSTATO A 2.000.000
     let taps = localStorage.getItem('game_taps') ? parseInt(localStorage.getItem('game_taps')) : 2000000;
     let squad = JSON.parse(localStorage.getItem('game_squad')) || { pt:[], df:[], at:[], res_pt:null, res_df:null, res_at:null };
     let subMode = false, selectedForSub = null, currentOpp = null;
 
-    function save() {
-        localStorage.setItem('game_taps', taps);
-        localStorage.setItem('game_squad', JSON.stringify(squad));
-    }
-
-    function refresh() {
-        document.getElementById('display-taps').innerText = taps.toLocaleString('it-IT');
-    }
-
-    function doTap() {
-        taps++;
-        refresh();
-        save();
-    }
+    function save() { localStorage.setItem('game_taps', taps); localStorage.setItem('game_squad', JSON.stringify(squad)); }
+    function refresh() { document.getElementById('display-taps').innerText = taps.toLocaleString('it-IT'); }
+    function doTap() { taps++; refresh(); save(); }
 
     function move(id, el) {
         document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
@@ -173,8 +161,21 @@
 
     function getStats(p) {
         let base = BASE_VALUES[p.level];
-        let g = p.upgrades * (p.level * 2.5);
-        let s = { vel: Math.floor(base+g), tir: Math.floor(base+g), dif: Math.floor(base+g), pas: Math.floor(base+g), fis: Math.floor(base+g) };
+        let growth = p.upgrades * (p.level * 2.5);
+        let baseVal = base + growth;
+
+        if (!p.special) {
+            const keys = ['vel', 'tir', 'dif', 'pas', 'fis'];
+            p.special = keys.sort(() => 0.5 - Math.random()).slice(0, 2);
+            save();
+        }
+
+        let s = {};
+        ['vel', 'tir', 'dif', 'pas', 'fis'].forEach(k => {
+            if (p.special.includes(k)) s[k] = Math.floor(baseVal * 1.20);
+            else s[k] = Math.floor(baseVal * 0.867);
+        });
+
         s.total = s.vel + s.tir + s.dif + s.pas + s.fis;
         return s;
     }
@@ -188,11 +189,9 @@
                 if(selectedForSub && selectedForSub.role === role && selectedForSub.idx === idx) classes += " selected-sub";
             }
             if(!p) return `<div class="${classes}" onclick="handleCardClick('${role}',${idx})"><div style="margin:auto; font-size:8px; color:#555;">${label}</div></div>`;
-            
             let s = getStats(p);
             if(!role.includes('res')) totalPwr += s.total;
             let upText = p.upgrades >= LIMITS[p.level] ? "MAX" : p.upgrades + "/" + LIMITS[p.level];
-
             return `<div class="${classes}" style="border-color:${COLORS[p.level]}" onclick="handleCardClick('${role}',${idx})">
                 <div class="card-img" style="background-image:url('https://api.dicebear.com/7.x/avataaars/svg?seed=${p.name}')"></div>
                 <div class="card-lvl">LV ${p.level}</div>
@@ -200,7 +199,6 @@
                 <div class="card-info"><span class="card-pwr">${s.total}</span><span class="card-name">${p.name}</span></div>
             </div>`;
         };
-
         document.getElementById('row-pt').innerHTML = draw(squad.pt[0], 'pt', 0, 'POR');
         document.getElementById('row-df').innerHTML = draw(squad.df[0], 'df', 0, 'DIF') + draw(squad.df[1], 'df', 1, 'DIF');
         document.getElementById('row-at').innerHTML = draw(squad.at[0], 'at', 0, 'ATT') + draw(squad.at[1], 'at', 1, 'ATT');
@@ -213,9 +211,8 @@
             let p = (idx === null) ? squad[role] : squad[role][idx];
             if(p) openModal(role, idx);
         } else {
-            if(!selectedForSub) {
-                if(!role.startsWith('res')) selectedForSub = { role, idx };
-            } else {
+            if(!selectedForSub) { if(!role.startsWith('res')) selectedForSub = { role, idx }; }
+            else {
                 if(role === "res_" + selectedForSub.role || "res_" + role === selectedForSub.role) {
                     let tit = squad[selectedForSub.role][selectedForSub.idx];
                     let ris = (idx === null) ? squad[role] : squad[role][idx];
@@ -246,14 +243,19 @@
         let html = "";
         const lbls = {vel:"Velocità", tir:"Tiro", dif:"Difesa", pas:"Passaggio", fis:"Fisico"};
         for(let k in lbls) {
-            html += `<div class="stat-row"><span>${lbls[k]}</span><div class="bar-bg"><div class="bar-fill" style="width:${Math.min(s[k]/10, 100)}%"></div></div><span>${s[k]}</span></div>`;
+            let isSpecial = p.special.includes(k);
+            html += `<div class="stat-row">
+                <span style="${isSpecial?'color:#2ecc71;font-weight:bold':''}">${lbls[k]} ${isSpecial?'★':''}</span>
+                <div class="bar-bg"><div class="bar-fill" style="width:${Math.min(s[k]/10, 100)}%; background:${isSpecial?'#2ecc71':'#3498db'}"></div></div>
+                <span>${s[k]}</span>
+            </div>`;
         }
         document.getElementById('m-stats').innerHTML = html;
         let cost = p.level * 200 * (p.upgrades + 1);
         let btn = document.getElementById('m-upg');
         if(p.upgrades >= LIMITS[p.level]) { btn.innerText = "MAX"; btn.disabled = true; }
         else {
-            btn.innerText = `POTENZIA (${cost} TAP)`;
+            btn.innerText = `POTENZIA (${cost.toLocaleString('it-IT')} TAP)`;
             btn.disabled = false;
             btn.onclick = () => { if(taps >= cost) { taps -= cost; p.upgrades++; save(); refresh(); updateModalStats(role, idx); } };
         }
@@ -263,29 +265,25 @@
         if(taps < 500) return alert("Pochi Tap!");
         taps -= 500; refresh(); save();
         const overlay = document.getElementById('pack-overlay');
-        const animCard = document.getElementById('pack-anim-card');
         overlay.style.display = 'flex';
-        animCard.className = 'anim-card spinning';
+        document.getElementById('pack-anim-card').className = 'anim-card spinning';
         document.getElementById('pack-title').innerText = "SORTEGGIO...";
         document.getElementById('pack-details').innerText = "";
         document.getElementById('btn-close-pack').style.display = "none";
-
         setTimeout(() => {
-            animCard.className = 'anim-card';
             let lv = Math.random()<0.05?5 : Math.random()<0.15?4 : Math.random()<0.3?3 : Math.random()<0.6?2 : 1;
             let name = DB[lv][Math.floor(Math.random()*DB[lv].length)];
             let role = ['pt','df', 'at'][Math.floor(Math.random()*3)];
-            
+            const animCard = document.getElementById('pack-anim-card');
+            animCard.className = 'anim-card';
             const all = [...squad.pt, ...squad.df, ...squad.at, squad.res_pt, squad.res_df, squad.res_at].filter(x=>x);
             if(all.some(x => x.name === name)) {
-                animCard.innerHTML = "❌";
-                document.getElementById('pack-title').innerText = "DOPPIONE SCARTATO";
+                animCard.innerHTML = "❌"; document.getElementById('pack-title').innerText = "DOPPIONE SCARTATO";
             } else {
                 let p = { name, level: lv, upgrades: 0, role };
                 let added = false;
                 if(squad[role].length < (role==='pt'?1:2)) { squad[role].push(p); added = true; }
                 else if(!squad['res_'+role]) { squad['res_'+role] = p; added = true; }
-                
                 if(added) {
                     animCard.innerHTML = `<img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${name}" style="width:100%">`;
                     animCard.style.borderColor = COLORS[lv];
@@ -301,15 +299,7 @@
     function closePack() { document.getElementById('pack-overlay').style.display = 'none'; renderSquad(); }
     function toggleSubMode() { subMode = !subMode; selectedForSub = null; renderSquad(); document.getElementById('btn-toggle-sub').innerText = subMode ? "ANNULLA" : "GESTISCI SOSTITUZIONI"; }
     function closeModal() { document.getElementById('modal-detail').style.display = 'none'; renderSquad(); }
-    
-    function generateOpp() {
-        if(currentOpp) return;
-        let pwr = 1000 + Math.floor(Math.random()*4000);
-        currentOpp = { name: "Team Rival", pwr };
-        document.getElementById('opp-name').innerText = currentOpp.name;
-        document.getElementById('opp-pwr').innerText = "Power: " + pwr;
-    }
-
+    function generateOpp() { if(!currentOpp) { let pwr = 1000 + Math.floor(Math.random()*4000); currentOpp = { name: "Team Rival", pwr }; document.getElementById('opp-name').innerText = currentOpp.name; document.getElementById('opp-pwr').innerText = "Power: " + pwr; } }
     function startMatch() {
         let myPwr = parseInt(document.getElementById('team-pwr').innerText);
         if(myPwr === 0) return alert("Crea una squadra!");
@@ -319,13 +309,8 @@
             if(win) taps += 10000; currentOpp = null; refresh(); save();
         }, 500);
     }
-
     function clearAll() { if(confirm("Resettare?")) { localStorage.clear(); location.reload(); } }
-
-    window.onload = () => {
-        refresh();
-        move('campo');
-    }
+    window.onload = () => { refresh(); move('campo'); }
 </script>
 </body>
 </html>
