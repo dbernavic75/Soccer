@@ -283,4 +283,49 @@
             } else {
                 let p = { name, level: lv, upgrades: 0, role };
                 let added = false;
-                if(squad[role].length < (role==='pt'?1:2)) { squad[role
+                if(squad[role].length < (role==='pt'?1:2)) { squad[role].push(p); added = true; }
+                else if(!squad['res_'+role]) { squad['res_'+role] = p; added = true; }
+                
+                if(added) {
+                    animCard.innerHTML = `<img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${name}" style="width:100%">`;
+                    animCard.style.borderColor = COLORS[lv];
+                    document.getElementById('pack-title').innerText = name.toUpperCase();
+                    document.getElementById('pack-details').innerHTML = CAT_NAMES[lv] + "<br>" + (role==='pt'?'PORTIERE':role==='df'?'DIFENSORE':'ATTACCANTE');
+                    save();
+                } else { animCard.innerHTML = "🚫"; document.getElementById('pack-title').innerText = "SLOT PIENI"; }
+            }
+            document.getElementById('btn-close-pack').style.display = "block";
+        }, 1500);
+    }
+
+    function closePack() { document.getElementById('pack-overlay').style.display = 'none'; renderSquad(); }
+    function toggleSubMode() { subMode = !subMode; selectedForSub = null; renderSquad(); document.getElementById('btn-toggle-sub').innerText = subMode ? "ANNULLA" : "GESTISCI SOSTITUZIONI"; }
+    function closeModal() { document.getElementById('modal-detail').style.display = 'none'; renderSquad(); }
+    
+    function generateOpp() {
+        if(currentOpp) return;
+        let pwr = 1000 + Math.floor(Math.random()*4000);
+        currentOpp = { name: "Team Rival", pwr };
+        document.getElementById('opp-name').innerText = currentOpp.name;
+        document.getElementById('opp-pwr').innerText = "Power: " + pwr;
+    }
+
+    function startMatch() {
+        let myPwr = parseInt(document.getElementById('team-pwr').innerText);
+        if(myPwr === 0) return alert("Crea una squadra!");
+        setTimeout(() => {
+            let win = Math.random() < (myPwr / (myPwr + currentOpp.pwr));
+            document.getElementById('match-log').innerHTML = win ? "VITTORIA! +10.000" : "SCONFITTA";
+            if(win) taps += 10000; currentOpp = null; refresh(); save();
+        }, 500);
+    }
+
+    function clearAll() { if(confirm("Resettare?")) { localStorage.clear(); location.reload(); } }
+
+    window.onload = () => {
+        refresh();
+        move('campo');
+    }
+</script>
+</body>
+</html>
