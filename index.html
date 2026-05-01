@@ -125,7 +125,7 @@
 
 <div id="nav">
     <div class="nav-item active" onclick="move('campo', this)">CAMPO</div>
-    <div class="nav-item" onclick="onclick="move('squadra', this)">SQUADRA</div>
+    <div class="nav-item" onclick="move('squadra', this)">SQUADRA</div>
     <div class="nav-item" onclick="move('stadio', this)">STADIO</div>
 </div>
 
@@ -226,91 +226,4 @@
     }
 
     function openModal(role, idx) {
-        let p = (idx === null) ? squad[role] : squad[role][idx];
-        document.getElementById('modal-detail').style.display = 'flex';
-        document.getElementById('m-img').src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.name}`;
-        document.getElementById('m-name').innerText = p.name;
-        document.getElementById('m-role').innerText = "RUOLO: " + (p.role === 'pt' ? 'PORTIERE' : p.role === 'df' ? 'DIFENSORE' : 'ATTACCANTE');
-        document.getElementById('m-cat').innerText = CAT_NAMES[p.level];
-        document.getElementById('m-cat').style.color = COLORS[p.level];
-        updateModalStats(role, idx);
-    }
-
-    function updateModalStats(role, idx) {
-        let p = (idx === null) ? squad[role] : squad[role][idx];
-        let s = getStats(p);
-        document.getElementById('m-total').innerText = s.total;
-        let html = "";
-        const lbls = {vel:"Velocità", tir:"Tiro", dif:"Difesa", pas:"Passaggio", fis:"Fisico"};
-        for(let k in lbls) {
-            let isSpecial = p.special.includes(k);
-            html += `<div class="stat-row">
-                <span style="${isSpecial?'color:#2ecc71;font-weight:bold':''}">${lbls[k]} ${isSpecial?'★':''}</span>
-                <div class="bar-bg"><div class="bar-fill" style="width:${Math.min(s[k]/10, 100)}%; background:${isSpecial?'#2ecc71':'#3498db'}"></div></div>
-                <span>${s[k]}</span>
-            </div>`;
-        }
-        document.getElementById('m-stats').innerHTML = html;
-        let cost = p.level * 200 * (p.upgrades + 1);
-        let btn = document.getElementById('m-upg');
-        if(p.upgrades >= LIMITS[p.level]) { btn.innerText = "MAX"; btn.disabled = true; }
-        else {
-            btn.innerText = `POTENZIA (${cost.toLocaleString('it-IT')} TAP)`;
-            btn.disabled = false;
-            btn.onclick = () => { if(taps >= cost) { taps -= cost; p.upgrades++; save(); refresh(); updateModalStats(role, idx); } };
-        }
-    }
-
-    function openPack() {
-        if(taps < 500) return alert("Pochi Tap!");
-        taps -= 500; refresh(); save();
-        const overlay = document.getElementById('pack-overlay');
-        overlay.style.display = 'flex';
-        document.getElementById('pack-anim-card').className = 'anim-card spinning';
-        document.getElementById('pack-title').innerText = "SORTEGGIO...";
-        document.getElementById('pack-details').innerText = "";
-        document.getElementById('btn-close-pack').style.display = "none";
-        setTimeout(() => {
-            let lv = Math.random()<0.05?5 : Math.random()<0.15?4 : Math.random()<0.3?3 : Math.random()<0.6?2 : 1;
-            let name = DB[lv][Math.floor(Math.random()*DB[lv].length)];
-            let role = ['pt','df', 'at'][Math.floor(Math.random()*3)];
-            const animCard = document.getElementById('pack-anim-card');
-            animCard.className = 'anim-card';
-            const all = [...squad.pt, ...squad.df, ...squad.at, squad.res_pt, squad.res_df, squad.res_at].filter(x=>x);
-            if(all.some(x => x.name === name)) {
-                animCard.innerHTML = "❌"; document.getElementById('pack-title').innerText = "DOPPIONE SCARTATO";
-            } else {
-                let p = { name, level: lv, upgrades: 0, role };
-                let added = false;
-                if(squad[role].length < (role==='pt'?1:2)) { squad[role].push(p); added = true; }
-                else if(!squad['res_'+role]) { squad['res_'+role] = p; added = true; }
-                if(added) {
-                    animCard.innerHTML = `<img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${name}" style="width:100%">`;
-                    animCard.style.borderColor = COLORS[lv];
-                    document.getElementById('pack-title').innerText = name.toUpperCase();
-                    document.getElementById('pack-details').innerHTML = CAT_NAMES[lv] + "<br>" + (role==='pt'?'PORTIERE':role==='df'?'DIFENSORE':'ATTACCANTE');
-                    save();
-                } else { animCard.innerHTML = "🚫"; document.getElementById('pack-title').innerText = "SLOT PIENI"; }
-            }
-            document.getElementById('btn-close-pack').style.display = "block";
-        }, 1500);
-    }
-
-    function closePack() { document.getElementById('pack-overlay').style.display = 'none'; renderSquad(); }
-    function toggleSubMode() { subMode = !subMode; selectedForSub = null; renderSquad(); document.getElementById('btn-toggle-sub').innerText = subMode ? "ANNULLA" : "GESTISCI SOSTITUZIONI"; }
-    function closeModal() { document.getElementById('modal-detail').style.display = 'none'; renderSquad(); }
-    function generateOpp() { if(!currentOpp) { let pwr = 1000 + Math.floor(Math.random()*4000); currentOpp = { name: "Team Rival", pwr }; document.getElementById('opp-name').innerText = currentOpp.name; document.getElementById('opp-pwr').innerText = "Power: " + pwr; } }
-    function startMatch() {
-        let myPwr = parseInt(document.getElementById('team-pwr').innerText);
-        if(myPwr === 0) return alert("Crea una squadra!");
-        setTimeout(() => {
-            let win = Math.random() < (myPwr / (myPwr + currentOpp.pwr));
-            document.getElementById('match-log').innerHTML = win ? "VITTORIA! +10.000" : "SCONFITTA";
-            if(win) taps += 10000; currentOpp = null; refresh(); save();
-        }, 500);
-    }
-    function clearAll() { if(confirm("Resettare?")) { localStorage.clear(); location.reload(); } }
-    window.onload = () => { refresh(); move('campo'); }
-</script>
-</body>
-</html>
+        let p = (idx === null) ? squad
